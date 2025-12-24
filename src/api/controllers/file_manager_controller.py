@@ -1,0 +1,157 @@
+from importlib import import_module
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from src.core.settings import get_connection_config
+from src.domain.services.file_manager_service import FileManagerService
+from src.domain.dtos.file_manager_dto import FileManagerFilter, DocumentManagerResponse
+from src.domain.dtos.extract_file_dto import ExtractDocument
+from src.domain.dtos.file_comment_dto import AddDocumentCommentRequest
+from src.domain.dtos.update_extract_file_dto import UpdateExtractDocumentRequest, ResponseObjectModel
+from src.domain.dtos.file_details_dto import DocumentDetailsResponse
+from src.infrastructure.database.connection_manager import get_db
+from src.infrastructure.logging.logger_manager import get_logger
+from uuid import UUID
+from typing import Dict, List
+
+logger = get_logger(__name__)
+router = APIRouter(prefix="/files", tags=["FileManager"])
+
+
+def get_file_manager_service(db: Session = Depends(get_db)) -> FileManagerService:
+    """
+    Dependency provider for FileManagerService.
+    Dynamically loads the repository based on the active connection configuration.
+    """
+    try:
+        _, active_repository_path = get_connection_config()
+        module_path = f"{active_repository_path}.file_manager_repository"
+        repository_module = import_module(module_path)
+        repository_cls = getattr(repository_module, "FileManagerRepository")
+        
+        repository = repository_cls()
+        return FileManagerService(repository)
+    except (ImportError, AttributeError) as e:
+        logger.critical(f"Failed to load FileManagerRepository: {e}", exc_info=True)
+        raise RuntimeError("Configuration error: Repository could not be loaded.")
+
+
+@router.post("/get-file-manager", response_model=DocumentManagerResponse)
+def get_file_manager_list(
+    filters: FileManagerFilter,
+    service: FileManagerService = Depends(get_file_manager_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Get paginated file manager list with filters.
+    
+    This endpoint replicates the GetFileManager stored procedure,
+    providing the same filtering, sorting, and pagination capabilities
+    using SQLAlchemy ORM queries that work on both PostgreSQL and SQL Server.
+    
+    Supported filters:
+    - filetype: file type (e.g., "All", specific type)
+    - file_status: Tab filter (ToReview, Approved, Completed, etc.)
+    - sla_type: SLA status (All, withinsla, onsla, slabreached, uncategorized)
+    - search_text: Search in filename, fileuid, email subject, etc.
+    - Date filters, file type filters, and many more
+    
+    Returns paginated results with account info and SLA calculations.
+    """
+    logger.info(f"GetFileManagerListApi called: status={filters.document_status}, page={filters.page_number}")
+    return service.get_file_manager_list(db, filters)
+
+@router.post("/get-file-details-by-fileuid", response_model=DocumentDetailsResponse)
+def get_file_details_by_fileuid(
+    fileuid: UUID,
+    service: FileManagerService = Depends(get_file_manager_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Get file details by fileuid.
+    
+    This endpoint replicates the GetFileDetailsByFileUID stored procedure,
+    providing the same functionality using SQLAlchemy ORM queries that work on
+    both PostgreSQL and SQL Server.
+    """
+    logger.info(f"GetFileDetailsByDocUID called: fileuid={str(fileuid)}")
+    # Updated method name
+    return service.get_file_details_by_file_uid(db, fileuid)
+
+@router.post("/get-manual-extraction-config_fields-by-id")
+def get_manual_extraction_config_fields_by_id(
+    fileConfigurationId: int,
+    service: FileManagerService = Depends(get_file_manager_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Get manual extraction config fields by id.
+    
+    This endpoint replicates the GetManualExtractionConfigFieldsById stored procedure,
+    providing the same functionality using SQLAlchemy ORM queries that work on
+    both PostgreSQL and SQL Server.
+    """
+    logger.info(f"GetManualExtractionConfigFieldsById called: id={fileConfigurationId}")
+    return service.get_manual_extraction_config_fields_by_id(db, fileConfigurationId)
+
+@router.post("/get-extract-file-api", response_model=None)
+def get_extract_file_api(
+    fileuid: UUID,
+    service: FileManagerService = Depends(get_file_manager_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Get extraction document details by fileuid.
+    
+    This endpoint retrieves comprehensive extraction document information including:
+    - Extraction document details (classification, extraction data, etc.)
+    - File configuration fields associated with the classification
+    - Object-type fields from the configuration
+    - Security mappings for specific classifications (Rage, BrokerageMSBilling)
+    - Update document references
+    
+    Returns:
+        ExtractionDocumentField with all related data
+    """
+    logger.info(f"GetExtractDocumentApi called: fileuid={fileuid}")
+    return service.get_extract_document_api(db, fileuid)
+
+@router.get("/get-extract-files-by-fileuid-async", response_model=List[ExtractDocument])
+def get_extract_files_by_doc_uid(
+    fileuid: UUID,
+    service: FileManagerService = Depends(get_file_manager_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Get extract files by fileuid.
+    """
+    logger.info(f"GetExtractDocumentsByDocUIDAsync called: fileuid={fileuid}")
+    # Updated method name
+    return service.get_extract_documents_by_file_uid(db, fileuid)
+
+@router.post("/add-file-comment")
+def add_file_comment(
+    request: AddDocumentCommentRequest,
+    service: FileManagerService = Depends(get_file_manager_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Add a comment to a file.
+    """
+    logger.info(f"AddFileComment called: fileuid={request.fileuid}")
+    result = service.add_document_comment(db, request.fileuid, request.comment, request.createdby)
+    if result:
+        return True
+    from fastapi import HTTPException
+    raise HTTPException(status_code=500, detail="An error occurred while adding the document comment.")
+
+@router.post("/update-extract-file-api", response_model=ResponseObjectModel)
+def update_extract_file_api(
+    request: UpdateExtractDocumentRequest,
+    service: FileManagerService = Depends(get_file_manager_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Skeleton for UpdateExtractFileApi.
+    """
+    logger.info(f"UpdateExtractDocumentApi called: fileuid={request.extraction_document_detail.fileuid}")
+    return service.update_extract_document_api(db, request)

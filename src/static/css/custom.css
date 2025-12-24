@@ -1,0 +1,208 @@
+.model {
+  margin-top: 1em;
+}
+.search-bar {
+  width: 80%;
+  max-width: 600px;
+  height: 2.2em;
+  background-color: white !important;
+  color: #333 !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px;
+  margin-left: 20px;
+  padding: 0 10px;
+  font-size: 14px;
+  outline: none;
+}
+.search-bar:focus {
+  border-color: #888 !important;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+.topbar-wrapper {
+  width: 100%;
+  justify-content: space-between;
+}
+.cls-1 {
+  fill: red;
+}
+.topbar-wrapper img {
+  display: none;
+}
+.download-url-wrapper {
+  display: none !important;
+}
+body > svg {
+  display: none;
+}
+html {
+  box-sizing: border-box;
+  overflow: -moz-scrollbars-vertical;
+  overflow-y: scroll;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  background: #fafafa;
+}
+.swagger-ui .topbar .download-url-wrapper {
+  display: none;
+}
+
+.swagger-ui .model-toggle:after {
+  background: url("../images/model-closed-open-icon.svg") 50% no-repeat;
+}
+
+td {
+  vertical-align: middle !important;
+  padding: 1em !important;
+}
+
+.description tr,
+.model tr {
+  border-top: solid rgba(0, 0, 0, 0.1) 2px;
+}
+
+table img {
+  cursor: pointer;
+}
+
+code {
+  width: 600px;
+}
+
+.swagger-ui .highlight-code > .microlight code.language-json {
+  white-space: pre-wrap  !important;
+  word-break: keep-all !important;
+  overflow-wrap: break-word !important;
+}
+
+#modal-body {
+  background-color: white;
+  max-width: 80vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#modal {
+  position: absolute;
+  display: none;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(0, 0, 0, 0.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+#modal-image {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swagger-ui .wrapper {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.swagger-ui .wrapper:first-child {
+  max-width: 1460px;
+}
+
+.swagger-ui .highlight-code > .microlight {
+  position: sticky;
+  top: 65px;
+  height: auto;
+  max-height: calc(95vh - 52px);
+  overflow: auto;
+}
+
+/* Fix horizontal overflow during execution */
+.swagger-ui .opblock .opblock-section-header,
+.swagger-ui .opblock .responses-table,
+.swagger-ui .opblock .responses-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.swagger-ui pre,
+.swagger-ui code {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+}
+
+/* Move expansion arrow to the end of the API row */
+.swagger-ui .opblock-summary {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.swagger-ui .opblock-summary-control {
+  flex: 1;
+}
+
+.swagger-ui .opblock-control-arrow {
+  order: 999 !important;
+  margin-left: auto !important;
+}
+
+.swagger-ui .opblock-summary-description {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.swagger-ui .opblock-summary-path {
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.swagger-ui .opblock-tag {
+  overflow: hidden;
+}
+
+/* Response Actions Styling */
+.response-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.response-action-btn {
+  background-color: #fff !important;
+  color: #3b4151 !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 4px !important;
+  padding: 4px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.response-action-btn:hover {
+  background-color: #f9fafb !important;
+  border-color: #9ca3af !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.response-action-btn:active {
+  transform: translateY(1px);
+}
+

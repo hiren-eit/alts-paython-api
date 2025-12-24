@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Frame API - Documentation</title>
+  <!-- Swagger UI Standard CSS -->
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" >
+  <!-- Custom Arch-like CSS -->
+  <link rel="stylesheet" type="text/css" href="/static/css/custom.css" >
+  <link rel="icon" href="/static/images/favicon.ico" />
+  <style>
+    /* Immediate overrides to prevent FOUC */
+    html { box-sizing: border-box; overflow-y: scroll; }
+    *, *:before, *:after { box-sizing: inherit; }
+    body { margin: 0; background: #fafafa; }
+  </style>
+</head>
+
+<body>
+
+<!-- Icons used by Arch (Optional, but good for completeness) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <defs>
+    <symbol viewBox="0 0 20 20" id="unlocked">
+      <path d="M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V6h2v-.801C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8z"></path>
+    </symbol>
+    <symbol viewBox="0 0 20 20" id="locked">
+      <path d="M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8zM12 8H8V5.199C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="swagger-ui"></div>
+
+<!-- Swagger UI Bundles -->
+<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"> </script>
+<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"> </script>
+
+<script>
+window.onload = function() {
+  // Build a system
+  const ui = SwaggerUIBundle({
+    url: "/openapi.json", // Point to FastAPI's generated JSON
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout",
+    requestInterceptor: (req) => {
+        // Custom header injection if needed
+        return req;
+    }
+  });
+
+  window.ui = ui;
+};
+</script>
+
+</body>
+</html>
