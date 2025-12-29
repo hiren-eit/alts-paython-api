@@ -177,7 +177,7 @@ class UpdateDocumentReplayRequest(BaseModel):
 
 
 
-class DocumentManagerResponse(BaseModel):
+class FileManagerResponse(BaseModel):
     """
     Complete API response with pagination info
     """

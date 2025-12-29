@@ -3,7 +3,7 @@ from typing import List, Optional, Any
 from uuid import UUID
 from datetime import date
 
-class ExtractDocument(BaseModel):
+class ExtractFile(BaseModel):
     recid: Optional[int] = None
     fileuid: UUID
     fileconfigurationid: Optional[UUID] = None

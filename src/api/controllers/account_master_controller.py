@@ -6,7 +6,7 @@ from uuid import UUID
 
 from src.core.settings import get_connection_config
 from src.domain.services.account_master_service import AccountMasterService
-from src.domain.dtos.account_file_data_dto import AccountDocumentDataResponse
+from src.domain.dtos.account_file_data_dto import AccountFileDataResponse
 from src.infrastructure.logging.logger_manager import get_logger
 from src.infrastructure.database.connection_manager import get_db
 from src.api.controllers.base_controller import BaseController
@@ -41,7 +41,7 @@ class AccountMasterController(BaseController):
     Controller for Account Master operations.
     """
 
-    @router.get("/document-data", response_model=List[AccountDocumentDataResponse], summary="Get Account Data by Document UID")
+    @router.get("/file-data", response_model=List[AccountFileDataResponse], summary="Get Account Data by File UID")
     def get_account_data_by_docuid(
         file_uid: UUID = Query(..., alias="docUID", description="The unique identifier of the file (FileUID)"),
         service: AccountMasterService = Depends(get_account_master_service),

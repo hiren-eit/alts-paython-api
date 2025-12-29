@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from src.domain.interfaces.file_manager_repository_interface import IFileManagerRepository
 from src.domain.dtos.file_manager_dto import FileManagerFilter
-from src.domain.dtos.update_extract_file_dto import UpdateExtractDocumentRequest
+from src.domain.dtos.update_extract_file_dto import UpdateExtractFileRequest
 from uuid import UUID
 
 
@@ -49,7 +49,7 @@ class FileManagerService:
         """
         return self.repo.add_document_comment(db, fileuid, comment, createdby)
 
-    def update_extract_document_api(self, db: Session, request: UpdateExtractDocumentRequest):
+    def update_extract_document_api(self, db: Session, request: UpdateExtractFileRequest):
         """
         Skeleton for UpdateExtractDocumentApi.
         """

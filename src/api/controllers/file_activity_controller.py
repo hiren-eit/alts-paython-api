@@ -24,13 +24,13 @@ def get_service(db: Session = Depends(get_db)) -> FileActivityService:
 
 @router.get("/get-file-activity-log-api", response_model=List[FileActivity])
 def get_file_activity_logs(
-    docuid: UUID = Query(..., description="Document UID"),
+    docuid: UUID = Query(..., description="File UID"),
     service: FileActivityService = Depends(get_service),
     db: Session = Depends(get_db)
 ):
     """
     Get file activity logs by fileuid.
-    Renamed from GetDocumentActivityLogApi as per requirements.
+    Renamed from GetFileActivityLogApi as per requirements.
     """
     logger.info(f"GetFileActivityLogApi called: docuid={docuid}")
     

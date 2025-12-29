@@ -3,7 +3,7 @@ from uuid import UUID
 from typing import Optional
 
 
-class AddDocumentCommentRequest(BaseModel):
+class AddFileCommentRequest(BaseModel):
     fileuid: UUID
     comment: str
     createdby: Optional[str] = "System"

@@ -7,13 +7,13 @@ class ResponseObjectModel(BaseModel):
     resultobject: Optional[Any] = None
     resultmessage: str
 
-class ExtractionDocumentDetailModel(BaseModel):
+class ExtractionFileDetailModel(BaseModel):
     fileuid: UUID
     extracteddata: Optional[str] = None
     classification: Optional[str] = None
 
-class UpdateExtractDocumentRequest(BaseModel):
-    extraction_document_detail: ExtractionDocumentDetailModel
+class UpdateExtractFileRequest(BaseModel):
+    extraction_document_detail: ExtractionFileDetailModel
     updatedby: Optional[str] = "SYSTEM"
     old_audit_json: Optional[str] = None
     audit_updated_json: Optional[str] = None

@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from src.core.settings import get_connection_config
 from src.domain.services.file_manager_service import FileManagerService
-from src.domain.dtos.file_manager_dto import FileManagerFilter, DocumentManagerResponse
-from src.domain.dtos.extract_file_dto import ExtractDocument
-from src.domain.dtos.file_comment_dto import AddDocumentCommentRequest
-from src.domain.dtos.update_extract_file_dto import UpdateExtractDocumentRequest, ResponseObjectModel
+from src.domain.dtos.file_manager_dto import FileManagerFilter, FileManagerResponse
+from src.domain.dtos.extract_file_dto import ExtractFile
+from src.domain.dtos.file_comment_dto import AddFileCommentRequest
+from src.domain.dtos.update_extract_file_dto import UpdateExtractFileRequest, ResponseObjectModel
 from src.domain.dtos.file_details_dto import DocumentDetailsResponse
 from src.infrastructure.database.connection_manager import get_db
 from src.infrastructure.logging.logger_manager import get_logger
@@ -35,7 +35,7 @@ def get_file_manager_service(db: Session = Depends(get_db)) -> FileManagerServic
         raise RuntimeError("Configuration error: Repository could not be loaded.")
 
 
-@router.post("/get-file-manager", response_model=DocumentManagerResponse)
+@router.post("/get-file-manager", response_model=FileManagerResponse)
 def get_file_manager_list(
     filters: FileManagerFilter,
     service: FileManagerService = Depends(get_file_manager_service),
@@ -100,22 +100,22 @@ def get_extract_file_api(
     db: Session = Depends(get_db)
 ):
     """
-    Get extraction document details by fileuid.
+    Get extraction file details by fileuid.
     
-    This endpoint retrieves comprehensive extraction document information including:
-    - Extraction document details (classification, extraction data, etc.)
+    This endpoint retrieves comprehensive extraction docufilement information including:
+    - Extraction file details (classification, extraction data, etc.)
     - File configuration fields associated with the classification
     - Object-type fields from the configuration
     - Security mappings for specific classifications (Rage, BrokerageMSBilling)
-    - Update document references
+    - Update file references
     
     Returns:
-        ExtractionDocumentField with all related data
+        ExtractionFileField with all related data
     """
     logger.info(f"GetExtractDocumentApi called: fileuid={fileuid}")
     return service.get_extract_document_api(db, fileuid)
 
-@router.get("/get-extract-files-by-fileuid-async", response_model=List[ExtractDocument])
+@router.get("/get-extract-files-by-fileuid-async", response_model=List[ExtractFile])
 def get_extract_files_by_doc_uid(
     fileuid: UUID,
     service: FileManagerService = Depends(get_file_manager_service),
@@ -130,7 +130,7 @@ def get_extract_files_by_doc_uid(
 
 @router.post("/add-file-comment")
 def add_file_comment(
-    request: AddDocumentCommentRequest,
+    request: AddFileCommentRequest,
     service: FileManagerService = Depends(get_file_manager_service),
     db: Session = Depends(get_db)
 ):
@@ -146,7 +146,7 @@ def add_file_comment(
 
 @router.post("/update-extract-file-api", response_model=ResponseObjectModel)
 def update_extract_file_api(
-    request: UpdateExtractDocumentRequest,
+    request: UpdateExtractFileRequest,
     service: FileManagerService = Depends(get_file_manager_service),
     db: Session = Depends(get_db)
 ):

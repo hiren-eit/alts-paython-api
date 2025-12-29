@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from src.domain.dtos.extract_file_dto import FileSecurityMappingDTO
 from src.domain.interfaces.file_manager_repository_interface import IFileManagerRepository
 from src.domain.dtos.file_manager_dto import FileManagerFilter
-from src.domain.dtos.update_extract_file_dto import UpdateExtractDocumentRequest, ResponseObjectModel
+from src.domain.dtos.update_extract_file_dto import UpdateExtractFileRequest, ResponseObjectModel
 from src.infrastructure.database.query_builders import (
     DocumentManagerQueryBuilder,
     DocumentManagerResultEnricher
@@ -363,7 +363,7 @@ class FileManagerRepository(IFileManagerRepository):
     def update_extract_document_api(
         self,
         db: Session,
-        request: UpdateExtractDocumentRequest
+        request: UpdateExtractFileRequest
     ) -> ResponseObjectModel:
         """
         Skeleton for UpdateExtractDocumentApi.

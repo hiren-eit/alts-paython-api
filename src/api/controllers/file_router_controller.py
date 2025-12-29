@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.core.settings import get_connection_config
 from src.domain.services.file_router_service import FileRouterService
-from src.domain.dtos.extract_file_dto import ExtractDocument
+from src.domain.dtos.extract_file_dto import ExtractFile
 from src.infrastructure.database.connection_manager import get_db
 from src.infrastructure.logging.logger_manager import get_logger
 from src.api.controllers.base_controller import BaseController
@@ -41,7 +41,7 @@ class FileRouterController(BaseController):
     Controller for File Routing operations.
     """
 
-    @router.get("/extraction-data", response_model=List[ExtractDocument], summary="Get Extraction Data by Document UID")
+    @router.get("/extraction-data", response_model=List[ExtractFile], summary="Get Extraction Data by Document UID")
     def get_extraction_data(
         file_uid: UUID = Query(..., alias="DocUID", description="The distinct file identifier (FileUID)"),
         service: FileRouterService = Depends(get_file_router_service),
