@@ -13,5 +13,5 @@ class BusinessRuleRequest(BaseModel):
     password: Optional[str] = None
     groupcode: Optional[str] = None
     reasonfortoggle: Optional[str] = None
-    documenttypeid: Optional[int] = None
+    filetypeid: Optional[int] = None
     usage: Optional[int] = None

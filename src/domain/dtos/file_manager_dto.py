@@ -1,5 +1,5 @@
 """
-Document Manager DTOs - Request/Response models for GetDocumentManager API
+File Manager DTOs - Request/Response models for GetFileManager API
 Mirrors all parameters and response fields from the SQL Server stored procedure.
 """
 from datetime import date, datetime
@@ -11,12 +11,12 @@ from pydantic import BaseModel, Field
 class FileManagerFilter(BaseModel):
     """
     Request filter model - matches all SP parameters:
-    @DocType, @DocumentStatus, @FilterJson, @PageNumber, @PageSize,
+    @FileType, @FileStatus, @FilterJson, @PageNumber, @PageSize,
     @SortColumn, @SortOrder, @Visibility, @SlaType
     """
     # Core SP parameters
-    doc_type: str = Field(default="All", description="Document type filter")
-    document_status: str = Field(default="ToReview", description="Tab/status filter: All, ToReview, Approved, captured, extracted, linked, ingested, duplicates, completed, INPROGRESS, IGNORED")
+    file_type: str = Field(default="All", description="File type filter")
+    file_status: str = Field(default="ToReview", description="Tab/status filter: All, ToReview, Approved, captured, extracted, linked, ingested, duplicates, completed, INPROGRESS, IGNORED")
     page_number: int = Field(default=1, ge=1, description="Page number (1-indexed)")
     page_size: int = Field(default=100, ge=1, le=1000, description="Results per page")
     sort_column: Optional[str] = Field(default=None, description="Column to sort by")
@@ -25,13 +25,13 @@ class FileManagerFilter(BaseModel):
     sla_type: str = Field(default="All", description="SLA filter: All, withinsla, onsla, slabreached, uncategorized")
     
     # FilterJson fields - parsed from JSON in SP
-    search_text: Optional[List[str]] = Field(default=None, description="Search text(s) for filename, docuid, emailsubject, etc.")
+    search_text: Optional[List[str]] = Field(default=None, description="Search text(s) for filename, fileuid, emailsubject, etc.")
     firm_ids: Optional[List[int]] = Field(default=None, description="Firm ID filter")
     entity_ids: Optional[List[str]] = Field(default=None, description="Entity UID filter")
     file_types: Optional[List[str]] = Field(default=None, description="File extension filter")
-    document_type_gen_ai: Optional[List[str]] = Field(default=None, description="GenAI document type filter")
-    document_type_procees_rule: Optional[List[str]] = Field(default=None, description="Process rule document type filter")
-    doc_uids: Optional[List[str]] = Field(default=None, description="Document UID filter")
+    file_type_gen_ai: Optional[List[str]] = Field(default=None, description="GenAI file type filter")
+    file_type_procees_rule: Optional[List[str]] = Field(default=None, description="Process rule file type filter")
+    file_uids: Optional[List[str]] = Field(default=None, description="File UID filter")
     status_comments: Optional[List[str]] = Field(default=None, description="Status comment filter")
     failure_stages: Optional[List[str]] = Field(default=None, description="Failure stage filter")
     reasons: Optional[List[str]] = Field(default=None, description="Reason filter")
@@ -63,8 +63,8 @@ class FileManagerFilter(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "doc_type": "All",
-                "document_status": "ToReview",
+                "file_type": "All",
+                "file_status": "ToReview",
                 "page_number": 1,
                 "page_size": 50,
                 "sort_column": "status_date",
@@ -74,7 +74,7 @@ class FileManagerFilter(BaseModel):
         }
 
 
-class DocumentManagerItem(BaseModel):
+class FileManagerItem(BaseModel):
     """
     Response item model - matches all columns returned by SP's #TempResults
     """
@@ -148,28 +148,28 @@ class DocumentManagerItem(BaseModel):
         from_attributes = True
 
 
-class ApproveDocumentRequest(BaseModel):
+class ApproveFileRequest(BaseModel):
     """
-    Request item model - ApproveDocumentRequest
+    Request item model - ApproveFileRequest
     """
-    doc_uid: UUID = Field(description="Document UUID")
+    file_uid: UUID = Field(description="File UUID")
     comment: Optional[str] = Field(default=None, description="User comment")
-    status: Optional[str] = Field(default=None, description="Document status")
-    updated_by: Optional[str] = Field(default=None, description="Name of the use who approved document")
+    status: Optional[str] = Field(default=None, description="File status")
+    updated_by: Optional[str] = Field(default=None, description="Name of the use who approved file")
 
 
-class UpdateDocumentReplayRequest(BaseModel):
+class UpdateFileReplayRequest(BaseModel):
     """
-    Request model for /ReplayDocument and /AllReplayDocument Endpoints
+    Request model for /ReplayFile and /AllReplayFile Endpoints
     """
-    doc_uid: UUID = Field(description="Document UUID")
+    file_uid: UUID = Field(description="File UUID")
     comment: Optional[str] = Field(default=None, description="User comment")
-    updated_by: Optional[str] = Field(default=None, description="Name of the use who approved document")
+    updated_by: Optional[str] = Field(default=None, description="Name of the use who approved file")
 
     class Config:
         json_schema_extra = {
             "example": {
-                "doc_uid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "file_uid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                 "comments": "string",
                 "updated_by": "string"
             }
@@ -184,7 +184,7 @@ class FileManagerResponse(BaseModel):
     total: int = Field(description="Total matching records")
     page: int = Field(description="Current page number")
     page_size: int = Field(description="Results per page")
-    data: List[DocumentManagerItem] = Field(description="Document records")
+    data: List[FileManagerItem] = Field(description="File records")
     
     class Config:
         json_schema_extra = {

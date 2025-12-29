@@ -6,7 +6,7 @@ class FileSecurityMapping(BaseEntity):
     """
     Entity representing security mapping for a file.
     Maps to tbl_file_security_mapping in the frame schema.
-    Equivalent to DocumentSecurityMapping in .NET
+    Equivalent to FileSecurityMapping in .NET
     """
     __tablename__ = "tbl_file_security_mapping"
     __table_args__ = {'schema': 'frame'}
@@ -25,5 +25,5 @@ class FileSecurityMapping(BaseEntity):
     comment = Column(String(500), nullable=True)
     ismissingsecurity = Column(Boolean, nullable=True)
     securitystage = Column(String(50), nullable=True)
-    documentname = Column(String(255), nullable=True)
+    filename = Column(String(255), nullable=True)
     # isactive, created, createdby, updated, updatedby are inherited from BaseEntity

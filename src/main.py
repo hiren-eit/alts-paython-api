@@ -80,9 +80,9 @@ curl -X 'GET' \
 <tbody><tr>
 <td>
 <h3>File Manager</h3>
-<p>Manage your document lifecycle. Upload files, track their status (To Review, Approved, Completed), and retrieve detailed metadata or extraction results for specific documents using their Unique ID.</p>
+<p>Manage your file lifecycle. Upload files, track their status (To Review, Approved, Completed), and retrieve detailed metadata or extraction results for specific files using their Unique ID.</p>
 <h3>Extraction & Business Rules</h3>
-<p>Frame extracts data from documents and validates it against your custom business rules. You can manage these rules via the API and retrieve extraction configurations for specific document types.</p>
+<p>Frame extracts data from files and validates it against your custom business rules. You can manage these rules via the API and retrieve extraction configurations for specific file types.</p>
 <h3>Account Master</h3>
 <p>Manage the underlying structural data of your organization, including firms and their associated accounts, providing the context needed for all file operations.</p>
 <h3>File Routing & Logs</h3>

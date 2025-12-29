@@ -1,9 +1,9 @@
 import datetime
 from typing import List, Any, Dict
-from src.infrastructure.database.query_builders.get_all_active_document_list_result_enricher import GetAllActiveDocumentListResultEnricher
-from src.infrastructure.database.query_builders.get_all_active_document_list_query_builder import GetAllActiveDocumentListQueryBuilder
+from src.infrastructure.database.query_builders.get_all_active_file_list_result_enricher import GetAllActiveFileListResultEnricher
+from src.infrastructure.database.query_builders.get_all_active_file_list_query_builder import GetAllActiveFileListQueryBuilder
 from src.domain.entities.file_configuration_log import FileConfigurationLog
-from src.infrastructure.database.query_builders.update_document_configuration_action_query_builder import UpdateDocumentConfigurationActionQueryBuilder
+from src.infrastructure.database.query_builders.update_file_configuration_action_query_builder import UpdateFileConfigurationActionQueryBuilder
 from src.core.settings import settings
 
 from sqlalchemy import true
@@ -20,13 +20,11 @@ import json
 from datetime import datetime
 
 from src.domain.entities.file_configuration import FileConfiguration
-from src.infrastructure.database.query_builders import save_document_configuration_query_builder
-from src.infrastructure.database.query_builders.update_document_configuration_query_builder import UpdateDocumentConfiguration
+from src.infrastructure.database.query_builders import save_file_configuration_query_builder
+from src.infrastructure.database.query_builders.update_file_configuration_query_builder import UpdateFileConfiguration
 from src.domain.interfaces.file_configure_repository_interface import IFileConfigurationRepository
-# from src.infrastructure.database.query_builders.save_document_configuration_query_builder import DocumentConfigurationQueryBuilder
-# from src.infrastructure.database.query_builders.save_document_configuration_result_enricher import DocumentConfigurationResultEnricher
 from src.domain.dtos.file_configuration_dto import FileConfiguration, FileConfigurationField
-from src.infrastructure.database.query_builders.save_document_configuration_query_builder import SaveDocumentConfigurationQueryBuilder
+from src.infrastructure.database.query_builders.save_file_configuration_query_builder import SaveFileConfigurationQueryBuilder
 from src.infrastructure.logging.logger_manager import get_logger
 from uuid import UUID
 logger = get_logger(__name__)
@@ -44,14 +42,14 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                     "result_code": "SUCCESS",
                     "total": int,
                     # "in_review_count": int,
-                    "data": List[DocumentConfiguration]
+                    "data": List[FileConfiguration]
                 }
         """
         try:
-            logger.info("GetAllActiveDocumentConfigurationList")
+            logger.info("GetAllActiveFileConfigurationList")
 
             # Build query to get all active FileConfigurations
-            query_builder = GetAllActiveDocumentListQueryBuilder(db)
+            query_builder = GetAllActiveFileListQueryBuilder(db)
             query_builder.build_query()
             
             # Fetch the results
@@ -61,7 +59,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             count = query_builder.get_count()
 
             # Enrich the results (add additional details)
-            result_enricher = GetAllActiveDocumentListResultEnricher(db)
+            result_enricher = GetAllActiveFileListResultEnricher(db)
             enriched_result = result_enricher.enrich(results)
 
             return {
@@ -71,30 +69,30 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                 "data": enriched_result
             }
         except Exception as ex:
-            logger.error(f"GetAllActiveDocumentConfigurationList error: {ex}", exc_info=True)
+            logger.error(f"GetAllActiveFileConfigurationList error: {ex}", exc_info=True)
             db.rollback()
             raise
 
     
-    async def save_file_configuration(self, db: Session, documentConfiguration: FileConfiguration) -> bool:
+    async def save_file_configuration(self, db: Session, fileConfiguration: FileConfiguration) -> bool:
         """
         Add file configuration.
-        Replicates the AddDocumentConfiguration stored procedure logic.
+        Replicates the AddFileConfiguration stored procedure logic.
         """
         try:
-            logger.info("AddDocumentConfiguration")
-            query_builder = SaveDocumentConfigurationQueryBuilder(db)
-            if query_builder.configuration_exists(documentConfiguration.configuration_name):
+            logger.info("AddFileConfiguration")
+            query_builder = SaveFileConfigurationQueryBuilder(db)
+            if query_builder.configuration_exists(fileConfiguration.configuration_name):
                 return False
 
-            configuration, fields_count = query_builder.create_document_with_fields(
-                documentConfiguration
+            configuration, fields_count = query_builder.create_file_with_fields(
+                fileConfiguration
             )
 
             query_builder.save_log(
                 configuration.fileid,
                 fields_count,
-                len(documentConfiguration.created_by),
+                len(fileConfiguration.created_by),
             )
 
             query_builder.commit()
@@ -111,77 +109,77 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             raise
 
 
-    async def update_file_configuration(self, db: Session, documentConfiguration: FileConfiguration) -> bool:
+    async def update_file_configuration(self, db: Session, fileConfiguration: FileConfiguration) -> bool:
         """
             Update file configuration.
-            Replicates the UpdateDocumentConfiguration stored procedure logic.
+            Replicates the UpdateFileConfiguration stored procedure logic.
         """
         try:
-            logger.info("UpdateDocumentConfiguration")
-            query_builder = UpdateDocumentConfiguration(db)
+            logger.info("UpdateFileConfiguration")
+            query_builder = UpdateFileConfiguration(db)
             
-            existing_config = query_builder.get_document_configuration(documentConfiguration.fileid)
+            existing_config = query_builder.get_file_configuration(fileConfiguration.fileid)
             if not existing_config:
                 return False
 
             # 2. Log changes and update fields
             changes = []
-            if existing_config.description != documentConfiguration.description:
+            if existing_config.description != fileConfiguration.description:
                 changes.append({
                     "field_name": "description",
-                    "description": f"Description changed from {existing_config.description} to {documentConfiguration.description}",
+                    "description": f"Description changed from {existing_config.description} to {fileConfiguration.description}",
                     "change_type": "Updated"
                 })
-                existing_config.description = documentConfiguration.description
+                existing_config.description = fileConfiguration.description
 
-            if existing_config.sla_priority != documentConfiguration.sla_priority:
+            if existing_config.sla_priority != fileConfiguration.sla_priority:
                 changes.append({
                     "field_name": "sla_priority",
-                    "description": f"SLA Priority changed from {existing_config.sla_priority} to {documentConfiguration.sla_priority}",
+                    "description": f"SLA Priority changed from {existing_config.sla_priority} to {fileConfiguration.sla_priority}",
                     "change_type": "Updated"
                 })
-                existing_config.sla_priority = documentConfiguration.sla_priority
+                existing_config.sla_priority = fileConfiguration.sla_priority
 
                 
-            if existing_config.sla_days != documentConfiguration.sla_days:
+            if existing_config.sla_days != fileConfiguration.sla_days:
                 changes.append({
                     "field_name": "sla_days",
-                    "description": f"SLA Days changed from {existing_config.sla_days} to {documentConfiguration.sla_days}",
+                    "description": f"SLA Days changed from {existing_config.sla_days} to {fileConfiguration.sla_days}",
                     "change_type": "Updated"
                 })
-                existing_config.sla_days = documentConfiguration.sla_days
+                existing_config.sla_days = fileConfiguration.sla_days
 
-            if existing_config.schematype != documentConfiguration.schema_type:
+            if existing_config.schematype != fileConfiguration.schema_type:
                 changes.append({
                     "field_name": "schematype",
-                    "description": f"Schematype changed from {existing_config.schematype} to {documentConfiguration.schema_type}",
+                    "description": f"Schematype changed from {existing_config.schematype} to {fileConfiguration.schema_type}",
                     "change_type": "Updated"
                 })
-                existing_config.schematype = documentConfiguration.schema_type
+                existing_config.schematype = fileConfiguration.schema_type
 
-            if existing_config.extraction != documentConfiguration.extraction:
+            if existing_config.extraction != fileConfiguration.extraction:
                 changes.append({
                     "field_name": "extraction",
-                    "description": f"Extraction changed from {existing_config.extraction} to {documentConfiguration.extraction}",
+                    "description": f"Extraction changed from {existing_config.extraction} to {fileConfiguration.extraction}",
                     "change_type": "Updated"
                 })
-                existing_config.extraction = documentConfiguration.extraction
+                existing_config.extraction = fileConfiguration.extraction
 
-            if existing_config.fieldtype != documentConfiguration.field_type:
+            if existing_config.fieldtype != fileConfiguration.field_type:
                 changes.append({
                     "field_name": "fieldtype",
-                    "description": f"Field Type changed from {existing_config.fieldtype} to {documentConfiguration.field_type}",
+                    "description": f"Field Type changed from {existing_config.fieldtype} to {fileConfiguration.field_type}",
                     "change_type": "Updated"
                 })
-                existing_config.fieldtype = documentConfiguration.field_type
+                existing_config.fieldtype = fileConfiguration.field_type
 
             # 3. Update the configuration in DB
-            query_builder.update_configuration(existing_config, updated_by=documentConfiguration.updated_by)
+            query_builder.update_configuration(existing_config, updated_by=fileConfiguration.updated_by)
 
             # 4. Create change log
             if changes:
                 log_payload = json.dumps([{"description": change, "changeType": "Updated"} for change in changes])
-                query_builder.save_log(existing_config.fileid, log_payload, len(documentConfiguration.created_by))
+                query_builder.save_log(existing_config.fileid, log_payload, len(fileConfiguration.created_by))
 
             # 5. Commit transaction
             query_builder.commit()
@@ -191,75 +189,75 @@ class FileConfigurationRepository(IFileConfigurationRepository):
 
             return True
         except Exception as ex:
-            logger.error(f"UpdateDocumentConfiguration error: {ex}", exc_info=True)
+            logger.error(f"UpdateFileConfiguration error: {ex}", exc_info=True)
             query_builder.rollback()
             raise
 
     
-    async def update_file_action_configuration(self, db: Session, documentConfiguration: FileConfiguration) -> bool:
+    async def update_file_action_configuration(self, db: Session, fileConfiguration: FileConfiguration) -> bool:
         """
             Update file configuration action.
-            Replicates the UpdateDocumentConfigurationAction stored procedure logic.
+            Replicates the UpdateFileConfigurationAction stored procedure logic.
         """
         try:
-            logger.info("UpdateDocumentConfigurationAction")
-            query_builder = UpdateDocumentConfigurationActionQueryBuilder(db)
-            document_config_result = query_builder.get_document_configuration(documentConfiguration.fileid)
-            if not document_config_result:
-                logger.error(f"Document Configuration with ID {documentConfiguration.fileid} not found")
+            logger.info("UpdateFileConfigurationAction")
+            query_builder = UpdateFileConfigurationActionQueryBuilder(db)
+            file_config_result = query_builder.get_file_configuration(fileConfiguration.fileid)
+            if not file_config_result:
+                logger.error(f"File Configuration with ID {fileConfiguration.fileid} not found")
                 return False
 
             changes = []
 
-            if document_config_result.isactive != documentConfiguration.is_active:
+            if file_config_result.isactive != fileConfiguration.is_active:
                 changes.append({
                     "field_name": "isactive",
-                    "description": f"{documentConfiguration.reason}",
+                    "description": f"{fileConfiguration.reason}",
                     "change_type": "Updated"
                 })
-                document_config_result.isactive = documentConfiguration.is_active
+                file_config_result.isactive = fileConfiguration.is_active
 
-            document_config_result.reason = documentConfiguration.reason
-            document_config_result.updated = datetime.utcnow()
-            document_config_result.updatedby = len(documentConfiguration.updated_by or "SYSTEM")
+            file_config_result.reason = fileConfiguration.reason
+            file_config_result.updated = datetime.utcnow()
+            file_config_result.updatedby = len(fileConfiguration.updated_by or "SYSTEM")
 
-            query_builder.update_document_configuration_in_db()
+            query_builder.update_file_configuration_in_db()
 
             #Log changes if any
             if changes:
                 json_description = json.dumps(changes)
                 log_entry = FileConfigurationLog(
-                    fileconfigurationid = documentConfiguration.fileid,
-                    title="Configuration Activated" if documentConfiguration.is_active else "Configuration Deactivated",
+                    fileconfigurationid = fileConfiguration.fileid,
+                    title="Configuration Activated" if fileConfiguration.is_active else "Configuration Deactivated",
                     description=json_description,
                     updated=datetime.utcnow(),
-                    updatedby=len(documentConfiguration.updated_by or "SYSTEM"),
+                    updatedby=len(fileConfiguration.updated_by or "SYSTEM"),
                     created=datetime.utcnow(),
-                    createdby=len(documentConfiguration.created_by or "SYSTEM"),
-                    isactive=True if documentConfiguration.is_active else False,
+                    createdby=len(fileConfiguration.created_by or "SYSTEM"),
+                    isactive=True if fileConfiguration.is_active else False,
                 )
                 query_builder.save_log(log_entry)
 
-                updated_document = query_builder.get_document_configuration(documentConfiguration.fileid)
+                updated_file = query_builder.get_file_configuration(fileConfiguration.fileid)
 
                 # json_payload = json.dumps({
-                #     "id": updated_document.fileid,
-                #     "configuration_name": updated_document.configurationname,
-                #     "description": updated_document.description,
-                #     "sla_priority": updated_document.sla_priority,
-                #     "sla_days": updated_document.sla_days,
-                #     "schema_type": updated_document.schematype,
-                #     "extraction": updated_document.extraction,
-                #     "document_type_id": str(updated_document.filetypeid),
-                #     "is_active": updated_document.isactive,
-                #     "fields_collection": documentConfiguration.fields_collection
+                #     "id": updated_file.fileid,
+                #     "configuration_name": updated_file.configurationname,
+                #     "description": updated_file.description,
+                #     "sla_priority": updated_file.sla_priority,
+                #     "sla_days": updated_file.sla_days,
+                #     "schema_type": updated_file.schematype,
+                #     "extraction": updated_file.extraction,
+                #     "file_type_id": str(updated_file.filetypeid),
+                #     "is_active": updated_file.isactive,
+                #     "fields_collection": fileConfiguration.fields_collection
                 # })
                 
                 # await self._send_to_external_api(json_payload)
 
             return True
         except Exception as ex:
-            logger.error(f"UpdateDocumentConfigurationAction error: {ex}", exc_info=True)
+            logger.error(f"UpdateFileConfigurationAction error: {ex}", exc_info=True)
             db.rollback()
             raise
 
@@ -267,20 +265,20 @@ class FileConfigurationRepository(IFileConfigurationRepository):
     def get_file_configuration_by_id(self, db: Session, fileconfigurationid: int) -> Dict:
         """
             Returns file configuration by id.
-            Replicates the GetDocumentConfigurationByID stored procedure logic.
+            Replicates the GetFileConfigurationByID stored procedure logic.
             
             Returns:
                 dict: {
                     "result_code": "SUCCESS",
                     "total": int,
-                    "data": List[DocumentConfiguration]
+                    "data": List[FileConfiguration]
                 }
         """
         try:
-            logger.info("GetDocumentConfigurationByID")
-            logger.info("GetDocumentConfigurationBySchemaType")
+            logger.info("GetFileConfigurationByID")
+            logger.info("GetFileConfigurationBySchemaType")
             # Build query to get all active FileConfigurations
-            query_builder = GetAllActiveDocumentListQueryBuilder(db, fileid=fileconfigurationid)
+            query_builder = GetAllActiveFileListQueryBuilder(db, fileid=fileconfigurationid)
             query_builder.build_query()
             
             # Fetch the results
@@ -290,7 +288,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             count = query_builder.get_count()
 
             # Enrich the results (add additional details)
-            result_enricher = GetAllActiveDocumentListResultEnricher(db)
+            result_enricher = GetAllActiveFileListResultEnricher(db)
             enriched_result = result_enricher.enrich(results)
 
             return {
@@ -300,7 +298,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                 "data": enriched_result
             }
         except Exception as ex:
-            logger.error(f"GetDocumentConfigurationByID error: {ex}", exc_info=True)
+            logger.error(f"GetFileConfigurationByID error: {ex}", exc_info=True)
             db.rollback()
             raise
 
@@ -308,20 +306,20 @@ class FileConfigurationRepository(IFileConfigurationRepository):
     def get_file_configuration_type(self, db: Session) -> Dict:
         """
             Returns file configuration type.
-            Replicates the GetDocumentConfigurationType stored procedure logic.
+            Replicates the GetFileConfigurationType stored procedure logic.
             
             Returns:
                 dict: {
                     "result_code": "SUCCESS",
                     "total": int,
                     "in_review_count": int,
-                    "data": List[DocumentConfiguration]
+                    "data": List[FileConfiguration]
                 }
         """
         try:
-            logger.info("GetDocumentConfigurationType")
+            logger.info("GetFileConfigurationType")
             # Build query to get all active FileConfigurations
-            query_builder = GetAllActiveDocumentListQueryBuilder(db)
+            query_builder = GetAllActiveFileListQueryBuilder(db)
             query_builder.build_query_master_config_type()
             
             # Fetch the results
@@ -331,7 +329,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             count = query_builder.get_count()
 
             # Enrich the results (add additional details)
-            result_enricher = GetAllActiveDocumentListResultEnricher(db)
+            result_enricher = GetAllActiveFileListResultEnricher(db)
             enriched_result = result_enricher.enrich_master_config_type(results)
 
             return {
@@ -341,27 +339,27 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                 "data": enriched_result
             }
         except Exception as ex:
-            logger.error(f"GetDocumentConfigurationType error: {ex}", exc_info=True)
+            logger.error(f"GetFileConfigurationType error: {ex}", exc_info=True)
             db.rollback()
             raise
 
 
     def get_file_configuration_by_schema_type(self, db: Session, schematype: str) -> Dict:
         """
-            Returns document configuration by schema type.
-            Replicates the GetDocumentConfigurationBySchemaType stored procedure logic.
+            Returns file configuration by schema type.
+            Replicates the GetFileConfigurationBySchemaType stored procedure logic.
             
             Returns:
                 dict: {
                     "result_code": "SUCCESS",
                     "total": int,
-                    "data": List[DocumentConfiguration]
+                    "data": List[FileConfiguration]
                 }
         """
         try:
-            logger.info("GetDocumentConfigurationBySchemaType")
+            logger.info("GetFileConfigurationBySchemaType")
             # Build query to get all active FileConfigurations
-            query_builder = GetAllActiveDocumentListQueryBuilder(db, schematype)
+            query_builder = GetAllActiveFileListQueryBuilder(db, schematype)
             query_builder.build_query()
             
             # Fetch the results
@@ -371,7 +369,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             count = query_builder.get_count()
 
             # Enrich the results (add additional details)
-            result_enricher = GetAllActiveDocumentListResultEnricher(db)
+            result_enricher = GetAllActiveFileListResultEnricher(db)
             enriched_result = result_enricher.enrich(results)
 
             return {
@@ -381,7 +379,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                 "data": enriched_result
             }
         except Exception as ex:
-            logger.error(f"GetDocumentConfigurationBySchemaType error: {ex}", exc_info=True)
+            logger.error(f"GetFileConfigurationBySchemaType error: {ex}", exc_info=True)
             db.rollback()
             raise
 

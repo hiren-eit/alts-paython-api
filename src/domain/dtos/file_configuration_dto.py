@@ -25,11 +25,11 @@ class FileConfigurationField(BaseModel):
     updated_by: Optional[str]
     is_active: bool
     field_name: Optional[str]
-    data_type: str  # replace with your DataTypes enum if available
+    data_type: str
     description: Optional[str]
     mandatory: Optional[bool]
     parent_field_id: Optional[UUID]
-    sub_rows: List[str]  # your sample shows strings; adjust to List[DocumentConfigurationFieldDto] if nested objects
+    sub_rows: List[str]
     file_configuration_id: UUID
 
 class FileConfiguration(BaseModel):
@@ -111,8 +111,6 @@ class FileConfigurationResponse(BaseModel):
     """
     result_code: str = Field(description="Result status of the API call") 
     total: int = Field(description="Total matching records")
-    # in_review_count: int = Field(description="Number of documents are in review")
-    # data: List[DocumentConfiguration] = Field(description="Document configuration records")
     data: List[Dict] = Field(description="File configuration records")
     
     class Config:

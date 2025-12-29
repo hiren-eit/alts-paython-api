@@ -4,7 +4,7 @@ from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, Field
 
-class DocumentDetailsItem(BaseModel):
+class FileDetailsItem(BaseModel):
     fileid: Optional[int] = None
     fileuid: Optional[UUID] = None
     type: Optional[str] = None
@@ -74,6 +74,6 @@ class DocumentDetailsItem(BaseModel):
         from_attributes = True
         arbitrary_types_allowed = True
 
-class DocumentDetailsResponse(BaseModel):
+class FileDetailsResponse(BaseModel):
     total: int = Field(description="Total matching records")
-    data: List[DocumentDetailsItem] = Field(description="Document details")
+    data: List[FileDetailsItem] = Field(description="File details")

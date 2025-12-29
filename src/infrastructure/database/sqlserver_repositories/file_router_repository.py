@@ -19,14 +19,14 @@ class FileRouterRepository(IFileRouterRepository):
         Replicates GetMultipleEntitiesORInvestor logic.
         """
         try:
-            logger.info(f"Fetching ExtractDocuments with file_uid: {file_uid}")
+            logger.info(f"Fetching ExtractFiles with file_uid: {file_uid}")
 
             results = db.query(ExtractFile).filter(
                 ExtractFile.fileuid == file_uid
             ).all()
 
-            logger.info(f"Successfully fetched {len(results)} ExtractDocuments with file_uid: {file_uid}")
+            logger.info(f"Successfully fetched {len(results)} ExtractFiles with file_uid: {file_uid}")
             return results
         except Exception as ex:
-            logger.error(f"An error occurred while fetching ExtractDocuments with file_uid: {file_uid}. Exception: {ex}", exc_info=True)
+            logger.error(f"An error occurred while fetching ExtractFiles with file_uid: {file_uid}. Exception: {ex}", exc_info=True)
             raise

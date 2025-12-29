@@ -1,7 +1,7 @@
 """
-Document Manager Query Builder
+File Manager Query Builder
 Separates the query building logic from the repository for cleaner architecture.
-This module handles all filter, sorting, and join logic for GetDocumentManager.
+This module handles all filter, sorting, and join logic for GetFileManager.
 """
 from datetime import datetime
 from typing import List, Dict, Optional
@@ -18,9 +18,9 @@ from src.domain.entities.file_configuration import FileConfiguration
 from src.domain.entities.firm_master import FirmMaster
 
 
-class DocumentManagerQueryBuilder:
+class FileManagerQueryBuilder:
     """
-    Query builder for GetDocumentManager.
+    Query builder for GetFileManager.
     Encapsulates all filtering, sorting, and join logic.
     """
     
@@ -106,10 +106,10 @@ class DocumentManagerQueryBuilder:
     # =========================================================================
     
     def _apply_status_filter(self):
-        """Apply document status filter based on the tab selected."""
+        """Apply file status filter based on the tab selected."""
         query = self._query
-        doc_type = self.filters.doc_type
-        status = self.filters.document_status.lower()
+        file_type = self.filters.file_type
+        status = self.filters.file_status.lower()
         
         status_handlers = {
             'all': self._filter_all,
@@ -127,11 +127,11 @@ class DocumentManagerQueryBuilder:
         
         handler = status_handlers.get(status)
         if handler:
-            query = handler(query, doc_type)
+            query = handler(query, file_type)
         
         return query
     
-    def _filter_all(self, query, doc_type):
+    def _filter_all(self, query, file_type):
         query = query.filter(
             or_(
                 and_(
@@ -141,74 +141,74 @@ class DocumentManagerQueryBuilder:
                 FileManager.status.in_(['Captured', 'Extract', 'Update', 'Pending'])
             )
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypeproceesrule == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypeproceesrule == file_type)
         return query
     
-    def _filter_approved(self, query, doc_type):
+    def _filter_approved(self, query, file_type):
         query = query.filter(FileManager.status == 'Approved')
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypegenai == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypegenai == file_type)
         return query
     
-    def _filter_captured(self, query, doc_type):
+    def _filter_captured(self, query, file_type):
         query = query.filter(
             FileManager.status == 'Failed',
             FileManager.failurestage == 'Failed Capture'
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypeproceesrule == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypeproceesrule == file_type)
         return query
     
-    def _filter_to_review(self, query, doc_type):
+    def _filter_to_review(self, query, file_type):
         query = query.filter(
             FileManager.status == 'Linked',
             FileManager.stage != 'Completed'
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypegenai == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypegenai == file_type)
         return query
     
-    def _filter_extracted(self, query, doc_type):
+    def _filter_extracted(self, query, file_type):
         query = query.filter(
             FileManager.status == 'Failed',
             FileManager.failurestage == 'Failed Extraction'
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypeproceesrule == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypeproceesrule == file_type)
         return query
     
-    def _filter_ignored(self, query, doc_type):
+    def _filter_ignored(self, query, file_type):
         query = query.filter(FileManager.status == 'Ignored')
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypeproceesrule == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypeproceesrule == file_type)
         return query
     
-    def _filter_linked(self, query, doc_type):
+    def _filter_linked(self, query, file_type):
         query = query.filter(
             FileManager.status == 'Failed',
             FileManager.failurestage == 'Failed Linking'
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypeproceesrule == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypeproceesrule == file_type)
         return query
     
-    def _filter_ingested(self, query, doc_type):
+    def _filter_ingested(self, query, file_type):
         query = query.filter(
             FileManager.status == 'Failed',
             FileManager.failurestage == 'Failed Ingestion'
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypeproceesrule == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypeproceesrule == file_type)
         return query
     
-    def _filter_duplicates(self, query, doc_type):
+    def _filter_duplicates(self, query, file_type):
         query = query.filter(FileManager.status == 'duplicate')
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypegenai == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypegenai == file_type)
         return query
     
-    def _filter_completed(self, query, doc_type):
+    def _filter_completed(self, query, file_type):
         query = query.filter(
             or_(
                 FileManager.status.in_(['ingested', 'Hub Persisted', 'Completed']),
@@ -219,11 +219,11 @@ class DocumentManagerQueryBuilder:
                 )
             )
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypegenai == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypegenai == file_type)
         return query
     
-    def _filter_in_progress(self, query, doc_type):
+    def _filter_in_progress(self, query, file_type):
         query = query.filter(
             FileManager.status.in_(['Captured', 'Extract', 'Update', 'Pending']),
             FileManager.stage.in_([
@@ -231,8 +231,8 @@ class DocumentManagerQueryBuilder:
                 'ExtractReceived', 'ExtractFailed', 'Manual', 'AccountIdentification'
             ])
         )
-        if doc_type != 'All':
-            query = query.filter(FileManager.filetypeproceesrule == doc_type)
+        if file_type != 'All':
+            query = query.filter(FileManager.filetypeproceesrule == file_type)
         return query
     
     # =========================================================================
@@ -299,8 +299,8 @@ class DocumentManagerQueryBuilder:
         # List filters
         list_filters = [
             (f.file_types, FileManager.fileextension),
-            (f.document_type_gen_ai, FileManager.filetypegenai),
-            (f.document_type_procees_rule, FileManager.filetypeproceesrule),
+            (f.file_type_gen_ai, FileManager.filetypegenai),
+            (f.file_type_procees_rule, FileManager.filetypeproceesrule),
             (f.status_comments, FileManager.statuscomment),
             (f.failure_stages, FileManager.failurestage),
             (f.reasons, FileManager.reason),
@@ -319,9 +319,9 @@ class DocumentManagerQueryBuilder:
             if values:
                 query = query.filter(column.in_(values))
         
-        # DocUID filter (needs cast)
-        if f.doc_uids:
-            query = query.filter(cast(FileManager.fileuid, String).in_(f.doc_uids))
+        # FileUID filter (needs cast)
+        if f.file_uids:
+            query = query.filter(cast(FileManager.fileuid, String).in_(f.file_uids))
         
         # Single value filters
         single_filters = [
@@ -370,14 +370,14 @@ class DocumentManagerQueryBuilder:
             'ignoredby': FileManager.ignoredby,
             'ignored_by': FileManager.ignoredby,
             'rule': FileManager.rule,
-            'documentname': FileManager.filename,
-            'document_name': FileManager.filename,
+            'filename': FileManager.filename,
+            'file_name': FileManager.filename,
             'reason': FileManager.reason,
             'age': FileManager.age,
             'harvestsource': FileManager.harvestsource,
             'harvest_source': FileManager.harvestsource,
-            'documenttypeprocesrule': FileManager.filetypeproceesrule,
-            'documenttypegenai': FileManager.filetypegenai,
+            'filetypeprocesrule': FileManager.filetypeproceesrule,
+            'filetypegenai': FileManager.filetypegenai,
             'processingmethod': FileManager.method,
             'capturemethod': FileManager.capturemethod,
             # 'capturesystem': FileManager.capturesystem,
@@ -389,7 +389,7 @@ class DocumentManagerQueryBuilder:
             'extractsystem': FileManager.extractsystem,
             'batch': FileManager.batchid,
             # 'sourceattributes': FileManager.sourceattributes,
-            'docuid': FileManager.fileuid,
+            'fileuid': FileManager.fileuid,
             'stage': FileManager.stage,
             'created': FileManager.createdate,
             'createdby': FileManager.createby,

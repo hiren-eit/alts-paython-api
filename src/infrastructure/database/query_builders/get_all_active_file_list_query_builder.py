@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from src.domain.entities.master_configuration_type import MasterConfigurationType
 from src.domain.entities.file_configuration import FileConfiguration
 
-class GetAllActiveDocumentListQueryBuilder:
+class GetAllActiveFileListQueryBuilder:
     def __init__(self, db: Session, schematype: str | None = None, fileid: int | None = None):
         self.db = db
         # self.schema_type = schema_type

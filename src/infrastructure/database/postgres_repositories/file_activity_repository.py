@@ -15,16 +15,16 @@ from src.domain.entities.extract_file import ExtractFile
 from src.domain.entities.file_configuration import FileConfiguration
 from src.domain.entities.account_master import AccountMaster
 from src.domain.interfaces.file_activity_repository_interface import IFileActivityRepository
-from src.domain.dtos.file_manager_dto import ApproveDocumentRequest, FileManagerFilter
+from src.domain.dtos.file_manager_dto import ApproveFileRequest, FileManagerFilter
 from src.infrastructure.database.query_builders import (
-    DocumentManagerQueryBuilder,
-    DocumentManagerResultEnricher,
+    FileManagerQueryBuilder,
+    FileManagerResultEnricher,
 )
 from src.domain.dtos.file_activity_dto import FileActivity
-from src.infrastructure.database.query_builders.file_details_query_builder import DocumentDetailsQueryBuilder
-from src.infrastructure.database.query_builders.file_details_result_enricher import DocumentDetailsResultEnricher
+from src.infrastructure.database.query_builders.file_details_query_builder import FileDetailsQueryBuilder
+from src.infrastructure.database.query_builders.file_details_result_enricher import FileDetailsResultEnricher
 from src.infrastructure.logging.logger_manager import get_logger
-from src.domain.dtos.file_details_dto import DocumentDetailsResponse
+from src.domain.dtos.file_details_dto import FileDetailsResponse
 from uuid import UUID
 
 logger = get_logger(__name__)
@@ -38,14 +38,14 @@ class FileActivityRepository(IFileActivityRepository):
         filters: FileManagerFilter
     ) -> Dict:
         """
-        Replicates GetDocumentManager stored procedure logic.
+        Replicates GetFileManager stored procedure logic.
         Uses separated QueryBuilder and ResultEnricher for clean code.
         """
         try:
-            logger.info(f"GetFileManagerList: status={filters.document_status}, docType={filters.doc_type}")
+            logger.info(f"GetFileManagerList: status={filters.file_status}, fileType={filters.file_type}")
             
             # Build query with all filters
-            query_builder = DocumentManagerQueryBuilder(db, filters)
+            query_builder = FileManagerQueryBuilder(db, filters)
             query_builder.build_query()
             
             # Get count and results
@@ -53,7 +53,7 @@ class FileActivityRepository(IFileActivityRepository):
             results = query_builder.get_results()
             
             # Enrich results with account info and SLA calculations
-            enricher = DocumentManagerResultEnricher(db, filters)
+            enricher = FileManagerResultEnricher(db, filters)
             items = enricher.enrich(results)
             
             logger.info(f"GetFileManagerList: returned {len(items)} items, total={total_count}")
@@ -69,37 +69,37 @@ class FileActivityRepository(IFileActivityRepository):
             logger.error(f"GetFileManagerList error: {ex}", exc_info=True)
             raise
 
-    # def get_file_details_by_docuid(
+    # def get_file_details_by_fileuid(
     #     self,
     #     db: Session,
-    #     docuid: UUID
-    # ) -> DocumentDetailsResponse:
+    #     fileuid: UUID
+    # ) -> FileDetailsResponse:
     #     """
-    #     Replicates GetDocumentDetailsByDocUID stored procedure logic.
+    #     Replicates GetFileDetailsByFileUID stored procedure logic.
     #     Uses separated QueryBuilder and ResultEnricher for clean code.
     #     """
     #     try:
-    #         logger.info(f"GetDocumentDetailsByDocUID: docuid={docuid}")
+    #         logger.info(f"GetFileDetailsByFileUID: fileuid={fileuid}")
 
     #         # 1. Build query
-    #         query_builder = DocumentDetailsQueryBuilder(db, str(docuid))
+    #         query_builder = FileDetailsQueryBuilder(db, str(fileuid))
     #         query_builder.build_query()
             
     #         # 2. Fetch raw DB record (single row)
     #         result = query_builder.get_one()
             
     #         if not result:
-    #             logger.info(f"GetDocumentDetailsByDocUID: No document found for {docuid}")
+    #             logger.info(f"GetFileDetailsByFileUID: No file found for {fileuid}")
     #             return {
     #                 "total": 0,
     #                 "data": []
     #             }
 
     #         # 3. Enrich result
-    #         enricher = DocumentDetailsResultEnricher(db)
+    #         enricher = FileDetailsResultEnricher(db)
     #         enriched = enricher.enrich(result)
 
-    #         logger.info(f"GetDocumentDetailsByDocUID: returning details for {docuid}")
+    #         logger.info(f"GetFileDetailsByFileUID: returning details for {fileuid}")
             
     #         # Wrap in paginated structure to match likely API requirements
     #         return {
@@ -108,10 +108,10 @@ class FileActivityRepository(IFileActivityRepository):
     #         }
 
     #     except Exception as ex:
-    #         logger.error(f"GetDocumentDetailsByDocUID error: {ex}", exc_info=True)
+    #         logger.error(f"GetFileDetailsByFileUID error: {ex}", exc_info=True)
     #         raise
 
-    # def get_file_details_by_docuid(self, db: Session, docuid: UUID):
+    # def get_file_details_by_fileuid(self, db: Session, fileuid: UUID):
     #     D = FileManager
     #     ED = ExtractFile
     #     AM = AccountMaster
@@ -229,7 +229,7 @@ class FileActivityRepository(IFileActivityRepository):
     #         )
     #         .filter(
     #             D.isactive.is_(True),
-    #             D.fileuid == docuid
+    #             D.fileuid == fileuid
     #         )
     #         .one_or_none()
     #     )
@@ -240,25 +240,25 @@ class FileActivityRepository(IFileActivityRepository):
     #     return {"total": 1, "data": [dict(row._mapping)]}
 
 
-    def get_file_details_by_docuid(
+    def get_file_details_by_fileuid(
         self,
         db: Session,
-        docuid: UUID
+        fileuid: UUID
     ) -> Dict:
         """
-        Get file details by DocUID.
+        Get file details by FileUID.
         Uses QueryBuilder and ResultEnricher for clean architecture.
         """
         try:
-            logger.info(f"GetFileDetailsByDocUID: docuid={docuid}")
+            logger.info(f"GetFileDetailsByFileUID: fileuid={fileuid}")
 
-            query_builder = DocumentDetailsQueryBuilder(db, docuid)
+            query_builder = FileDetailsQueryBuilder(db, fileuid)
             result = query_builder.get_file()
 
             if not result:
                 return {"total": 0, "data": []}
 
-            enricher = DocumentDetailsResultEnricher(db)
+            enricher = FileDetailsResultEnricher(db)
             item = enricher.enrich(result)
 
             return {
@@ -267,37 +267,37 @@ class FileActivityRepository(IFileActivityRepository):
             }
 
         except Exception as ex:
-            logger.error(f"GetFileDetailsByDocUID error: {ex}", exc_info=True)
+            logger.error(f"GetFileDetailsByFileUID error: {ex}", exc_info=True)
             raise
 
     
     
-    def get_file_activity(self, db: Session, docuid: UUID) -> List[FileActivity]:
-        """Retrieve file activity logs for a given document UID."""
-        logger.info(f"GetFileActivity: docuid={docuid}")
+    def get_file_activity(self, db: Session, fileuid: UUID) -> List[FileActivity]:
+        """Retrieve file activity logs for a given file UID."""
+        logger.info(f"GetFileActivity: fileuid={fileuid}")
         # TODO: Implement actual query logic. Returning empty list as placeholder.
         return []
 
-    def approve_document(
+    def approve_file(
         self,
         db: Session,
-        document: ApproveDocumentRequest,
+        file: ApproveFileRequest,
         
     ) -> Dict:
         """
-        This replicates the ApproveDocument endpoint,
+        This replicates the ApproveFile endpoint,
         """
         try:
-            logger.info(f"ApproveDocument: docuid={document.doc_uid}")
+            logger.info(f"ApproveFile: fileuid={file.file_uid}")
 
-            logger.info(f"ApproveDocument: document approval for {document.doc_uid}")
+            logger.info(f"ApproveFile: file approval for {file.file_uid}")
             return {
                 "result_code": "Success",
                 "total": 0,
                 "data": None,
-                "result_message": "Document approved successfully"
+                "result_message": "File approved successfully"
             }
 
         except Exception as ex:
-            logger.error(f"ApproveDocument error: {ex}", exc_info=True)
+            logger.error(f"ApproveFile error: {ex}", exc_info=True)
             raise

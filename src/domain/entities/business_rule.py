@@ -15,7 +15,7 @@ class BusinessRule(BaseEntity):
     password = Column(String(255))
     groupcode = Column(String(50))
     reasonfortoggle = Column(Text)
-    documenttypeid = Column(BigInteger) # Changed to match MasterConfigurationType ID Refactor
+    filetypeid = Column(BigInteger) # Changed to match MasterConfigurationType ID Refactor
     usage = Column(Integer, default=0) # Added based on C# GetBusinessDataResponse
     
     # isactive, created, createdby, updated, updatedby are inherited from BaseEntity

@@ -11,17 +11,17 @@ from src.domain.entities.file_configuration_field import FileConfigurationField
 from src.domain.entities.file_configuration_log import FileConfigurationLog
 from datetime import datetime, timezone
 
-class UpdateDocumentConfiguration:
+class UpdateFileConfiguration:
     """
-    Handles database operations for UpdateDocumentConfiguration
+    Handles database operations for UpdateFileConfiguration
     """
 
     def __init__(self, db: Session):
         self.db = db
 
-    def get_document_configuration(self, config_id: int) -> FileConfiguration:
+    def get_file_configuration(self, config_id: int) -> FileConfiguration:
         """
-        Fetches the existing document configuration from the database.
+        Fetches the existing file configuration from the database.
         """
         stmt = select(FileConfiguration).where(FileConfiguration.fileid == config_id)
         return self.db.execute(stmt).scalar_one_or_none()

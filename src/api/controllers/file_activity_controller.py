@@ -24,7 +24,7 @@ def get_service(db: Session = Depends(get_db)) -> FileActivityService:
 
 @router.get("/get-file-activity-log-api", response_model=List[FileActivity])
 def get_file_activity_logs(
-    docuid: UUID = Query(..., description="File UID"),
+    fileuid: UUID = Query(..., description="File UID"),
     service: FileActivityService = Depends(get_service),
     db: Session = Depends(get_db)
 ):
@@ -32,9 +32,9 @@ def get_file_activity_logs(
     Get file activity logs by fileuid.
     Renamed from GetFileActivityLogApi as per requirements.
     """
-    logger.info(f"GetFileActivityLogApi called: docuid={docuid}")
+    logger.info(f"GetFileActivityLogApi called: fileuid={fileuid}")
     
-    result = service.get_file_activity_logs(db, docuid)
+    result = service.get_file_activity_logs(db, fileuid)
     
     if not result:
         return []

@@ -14,11 +14,11 @@ class IFileManagerRepository:
         filters: FileManagerFilter
     ) -> Dict:
         """
-        Returns paginated document list with total count.
-        Replicates the GetDocumentManager stored procedure logic.
+        Returns paginated file list with total count.
+        Replicates the GetFileManager stored procedure logic.
         
         Returns:
-            dict: {"total": int, "data": List[DocumentManagerItem]}
+            dict: {"total": int, "data": List[FileManagerItem]}
         """
         raise NotImplementedError
 
@@ -28,18 +28,18 @@ class IFileManagerRepository:
         fileuid: UUID
     ) -> Dict:
         """
-        Returns document details by fileuid.
-        Replicates the GetDocumentDetailsByDocUID stored procedure logic.
+        Returns file details by fileuid.
+        Replicates the GetFileDetailsByFileUID stored procedure logic.
         
         Returns:
-            dict: {"total": int, "data": List[DocumentManagerItem]}
+            dict: {"total": int, "data": List[FileManagerItem]}
         """
         raise NotImplementedError
 
     def get_manual_extraction_config_fields_by_id(
         self,
         db: Session,
-        documentConfigurationId: int
+        fileconfigurationid: int
     ) -> Dict:
         """
         Returns manual extraction config fields by id.
@@ -50,33 +50,33 @@ class IFileManagerRepository:
         """
         raise NotImplementedError
 
-    def get_extract_document_api(
+    def get_extract_file_api(
         self,
         db: Session,
         fileuid: UUID
     ) -> Dict:
         """
-        Returns extraction document details by fileuid.
+        Returns extraction file details by fileuid.
         
         Returns:
-            dict: ExtractionDocumentField data
+            dict: ExtractionFileField data
         """
         raise NotImplementedError
 
-    def get_extract_documents_by_file_uid(
+    def get_extract_files_by_file_uid(
         self,
         db: Session,
         fileuid: UUID
     ) -> List[Dict]:
         """
-        Returns list of extract documents by file_uid.
+        Returns list of extract files by file_uid.
         
         Returns:
-            List[Dict]: List of ExtractDocument data
+            List[Dict]: List of ExtractFile data
         """
         raise NotImplementedError
 
-    def add_document_comment(
+    def add_file_comment(
         self,
         db: Session,
         fileuid: UUID,
@@ -88,12 +88,12 @@ class IFileManagerRepository:
         """
         raise NotImplementedError
 
-    def update_extract_document_api(
+    def update_extract_file_api(
         self,
         db: Session,
         request: UpdateExtractFileRequest
     ) -> ResponseObjectModel:
         """
-        Skeleton for UpdateExtractDocumentApi.
+        Skeleton for update_extract_file_api.
         """
         raise NotImplementedError

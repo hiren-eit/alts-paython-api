@@ -42,8 +42,8 @@ class AccountMasterController(BaseController):
     """
 
     @router.get("/file-data", response_model=List[AccountFileDataResponse], summary="Get Account Data by File UID")
-    def get_account_data_by_docuid(
-        file_uid: UUID = Query(..., alias="docUID", description="The unique identifier of the file (FileUID)"),
+    def get_account_data_by_fileuid(
+        file_uid: UUID = Query(..., alias="fileUID", description="The unique identifier of the file (FileUID)"),
         service: AccountMasterService = Depends(get_account_master_service),
         db: Session = Depends(get_db)
     ):

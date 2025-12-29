@@ -7,7 +7,7 @@ from src.domain.dtos.file_manager_dto import FileManagerFilter, FileManagerRespo
 from src.domain.dtos.extract_file_dto import ExtractFile
 from src.domain.dtos.file_comment_dto import AddFileCommentRequest
 from src.domain.dtos.update_extract_file_dto import UpdateExtractFileRequest, ResponseObjectModel
-from src.domain.dtos.file_details_dto import DocumentDetailsResponse
+from src.domain.dtos.file_details_dto import FileDetailsResponse
 from src.infrastructure.database.connection_manager import get_db
 from src.infrastructure.logging.logger_manager import get_logger
 from uuid import UUID
@@ -57,10 +57,10 @@ def get_file_manager_list(
     
     Returns paginated results with account info and SLA calculations.
     """
-    logger.info(f"GetFileManagerListApi called: status={filters.document_status}, page={filters.page_number}")
+    logger.info(f"GetFileManagerListApi called: status={filters.file_status}, page={filters.page_number}")
     return service.get_file_manager_list(db, filters)
 
-@router.post("/get-file-details-by-fileuid", response_model=DocumentDetailsResponse)
+@router.post("/get-file-details-by-fileuid", response_model=FileDetailsResponse)
 def get_file_details_by_fileuid(
     fileuid: UUID,
     service: FileManagerService = Depends(get_file_manager_service),
@@ -73,7 +73,7 @@ def get_file_details_by_fileuid(
     providing the same functionality using SQLAlchemy ORM queries that work on
     both PostgreSQL and SQL Server.
     """
-    logger.info(f"GetFileDetailsByDocUID called: fileuid={str(fileuid)}")
+    logger.info(f"GetFileDetailsByFileUID called: fileuid={str(fileuid)}")
     # Updated method name
     return service.get_file_details_by_file_uid(db, fileuid)
 
@@ -102,7 +102,7 @@ def get_extract_file_api(
     """
     Get extraction file details by fileuid.
     
-    This endpoint retrieves comprehensive extraction docufilement information including:
+    This endpoint retrieves comprehensive extraction file information including:
     - Extraction file details (classification, extraction data, etc.)
     - File configuration fields associated with the classification
     - Object-type fields from the configuration
@@ -112,11 +112,11 @@ def get_extract_file_api(
     Returns:
         ExtractionFileField with all related data
     """
-    logger.info(f"GetExtractDocumentApi called: fileuid={fileuid}")
-    return service.get_extract_document_api(db, fileuid)
+    logger.info(f"GetExtractFileApi called: fileuid={fileuid}")
+    return service.get_extract_file_api(db, fileuid)
 
 @router.get("/get-extract-files-by-fileuid-async", response_model=List[ExtractFile])
-def get_extract_files_by_doc_uid(
+def get_extract_files_by_file_uid(
     fileuid: UUID,
     service: FileManagerService = Depends(get_file_manager_service),
     db: Session = Depends(get_db)
@@ -124,9 +124,9 @@ def get_extract_files_by_doc_uid(
     """
     Get extract files by fileuid.
     """
-    logger.info(f"GetExtractDocumentsByDocUIDAsync called: fileuid={fileuid}")
+    logger.info(f"GetExtractFilesByFileUIDAsync called: fileuid={fileuid}")
     # Updated method name
-    return service.get_extract_documents_by_file_uid(db, fileuid)
+    return service.get_extract_files_by_file_uid(db, fileuid)
 
 @router.post("/add-file-comment")
 def add_file_comment(
@@ -138,11 +138,11 @@ def add_file_comment(
     Add a comment to a file.
     """
     logger.info(f"AddFileComment called: fileuid={request.fileuid}")
-    result = service.add_document_comment(db, request.fileuid, request.comment, request.createdby)
+    result = service.add_file_comment(db, request.fileuid, request.comment, request.createdby)
     if result:
         return True
     from fastapi import HTTPException
-    raise HTTPException(status_code=500, detail="An error occurred while adding the document comment.")
+    raise HTTPException(status_code=500, detail="An error occurred while adding the file comment.")
 
 @router.post("/update-extract-file-api", response_model=ResponseObjectModel)
 def update_extract_file_api(
@@ -153,5 +153,5 @@ def update_extract_file_api(
     """
     Skeleton for UpdateExtractFileApi.
     """
-    logger.info(f"UpdateExtractDocumentApi called: fileuid={request.extraction_document_detail.fileuid}")
-    return service.update_extract_document_api(db, request)
+    logger.info(f"UpdateExtractFileApi called: fileuid={request.extraction_file_detail.fileuid}")
+    return service.update_extract_file_api(db, request)

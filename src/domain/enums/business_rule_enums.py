@@ -10,16 +10,16 @@ class ChangeType(str, Enum):
     Added = "Added"
     Updated = "Updated"
 
-class DocumentProcessStage(str, Enum):
+class FileProcessStage(str, Enum):
     DocReady = "DocReady"
     Classified = "Classified"
     Ignored = "Ignored"
     ExtractReady = "ExtractReady"
     NotMacthRule = "NotMacthRule" # Matches C# typo/naming
 
-class DocumentProcessingState(str, Enum):
+class FileProcessingState(str, Enum):
     RuleProcessor = "RuleProcessor"
 
-class DocumentProcessStatus(str, Enum):
+class FileProcessStatus(str, Enum):
     Ignored = "Ignored"
     # Add other statuses as needed based on codebase usage

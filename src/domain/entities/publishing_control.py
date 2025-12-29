@@ -14,7 +14,7 @@ class PublishingControl(BaseEntity):
     business_date = Column(Date, nullable=True)
     expected_date = Column(Date, nullable=True)
     received_date = Column(Date, nullable=True)
-    document_type = Column(Text, nullable=True)
+    file_type = Column(Text, nullable=True)
     pub_status = Column(Text, nullable=True)
     delay = Column(Integer, nullable=True)
     annual_delay = Column(Integer, nullable=True)

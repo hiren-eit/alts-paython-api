@@ -12,7 +12,7 @@ class IFileConfigurationRepository:
     ) -> Dict:
         """
         Returns all active file configuration list with total count.
-        Replicates the GetAllActiveDocumentConfigurationList stored procedure logic.
+        Replicates the GetAllActiveFileConfigurationList stored procedure logic.
         
         Returns:
                 dict: {
@@ -32,7 +32,7 @@ class IFileConfigurationRepository:
     ) -> bool:
         """
         Add file configuration.
-        Replicates the AddDocumentConfiguration stored procedure logic.
+        Replicates the AddFileConfiguration stored procedure logic.
         """
         raise NotImplementedError
 
@@ -44,7 +44,7 @@ class IFileConfigurationRepository:
     ) -> bool:
         """
         Update file configuration.
-        Replicates the UpdateDocumentConfiguration stored procedure logic.
+        Replicates the UpdateFileConfiguration stored procedure logic.
         """
         raise NotImplementedError
 
@@ -56,7 +56,7 @@ class IFileConfigurationRepository:
     ) -> bool:
         """
         Update file configuration action.
-        Replicates the UpdateDocumentConfigurationAction stored procedure logic.
+        Replicates the UpdateFileConfigurationAction stored procedure logic.
         """
         raise NotImplementedError
 
@@ -68,13 +68,13 @@ class IFileConfigurationRepository:
     ) -> Dict:
         """
         Returns file configuration by id.
-        Replicates the GetDocumentConfigurationByID stored procedure logic.
+        Replicates the GetFileConfigurationByID stored procedure logic.
         
         Returns:
                 dict: {
                     "result_code": "SUCCESS",
                     "total": int,
-                    "data": List[DocumentConfiguration]
+                    "data": List[FileConfiguration]
                 }
         """
         raise NotImplementedError
@@ -86,13 +86,13 @@ class IFileConfigurationRepository:
     ) -> Dict:
         """
         Returns file configuration type.
-        Replicates the GetDocumentConfigurationType stored procedure logic.
+        Replicates the GetFileConfigurationType stored procedure logic.
         
         Returns:
                 dict: {
                     "result_code": "SUCCESS",
                     "total": int,
-                    "data": List[DocumentConfiguration]
+                    "data": List[FileConfiguration]
                 }
         """
         raise NotImplementedError
@@ -105,13 +105,13 @@ class IFileConfigurationRepository:
     ) -> Dict:
         """
         Returns file configuration by schema type.
-        Replicates the GetDocumentConfigurationBySchemaType stored procedure logic.
+        Replicates the GetFileConfigurationBySchemaType stored procedure logic.
         
         Returns:
                 dict: {
                     "result_code": "SUCCESS",
                     "total": int,
-                    "data": List[DocumentConfiguration]
+                    "data": List[FileConfiguration]
                 }
         """
         raise NotImplementedError

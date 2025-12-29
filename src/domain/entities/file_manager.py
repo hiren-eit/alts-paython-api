@@ -8,7 +8,7 @@ from .base_entity import BaseEntity
 # class FileManager(BaseEntity):
 #     __tablename__ = "file"
 
-#     doc_uid = Column(UUID(as_uuid=True), nullable=False)
+#     file_uid = Column(UUID(as_uuid=True), nullable=False)
 #     counter = Column(Integer)
 #     type = Column(String)
 #     filename = Column(String)
@@ -43,7 +43,7 @@ from .base_entity import BaseEntity
 #     status_date = Column(DateTime)
 
 #     method = Column(String)
-#     doc_sid = Column(String)
+#     file_sid = Column(String)
 #     link_uid = Column(UUID(as_uuid=True))
 
 #     available_date = Column(DateTime)
@@ -70,8 +70,8 @@ from .base_entity import BaseEntity
 #     category = Column(String)
 #     failure_stage = Column(String)
 
-#     document_type_procees_rule = Column(String)
-#     document_type_gen_ai = Column(String)
+#     file_type_procees_rule = Column(String)
+#     file_type_gen_ai = Column(String)
 
 #     ignored_on = Column(DateTime)
 #     ignored_by = Column(String)
@@ -96,11 +96,11 @@ from .base_entity import BaseEntity
 #     stage = Column(String(100))
 #     file_path = Column(String(450))
 
-#     duplicate_document_id = Column(UUID(as_uuid=True))
-#     update_document_id = Column(UUID(as_uuid=True))
+#     duplicate_file_id = Column(UUID(as_uuid=True))
+#     update_file_id = Column(UUID(as_uuid=True))
 
 #     status_comment = Column(String)
-#     document_process_stage = Column(String)
+#     file_process_stage = Column(String)
 
 #     business_rule_applied_date = Column(DateTime)
 

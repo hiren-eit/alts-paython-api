@@ -20,12 +20,12 @@ class FileRouterRepository(IFileRouterRepository):
         file_uid: UUID
     ) -> List[ExtractFile]:
         """
-        Retrieve a list of ExtractFile entities associated with a specific document UID.
+        Retrieve a list of ExtractFile entities associated with a specific file UID.
         Replicates the logic of the 'GetMultipleEntitiesORInvestor' stored procedure.
 
         Args:
             db (Session): The database session.
-            file_uid (UUID): The unique identifier of the document (file).
+            file_uid (UUID): The unique identifier of the file.
 
         Returns:
             List[ExtractFile]: A list of matching ExtractFile entities.

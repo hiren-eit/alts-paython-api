@@ -8,15 +8,15 @@ from src.domain.interfaces.file_manager_repository_interface import IFileManager
 from src.domain.dtos.file_manager_dto import FileManagerFilter
 from src.domain.dtos.update_extract_file_dto import UpdateExtractFileRequest, ResponseObjectModel
 from src.infrastructure.database.query_builders import (
-    DocumentManagerQueryBuilder,
-    DocumentManagerResultEnricher
+    FileManagerQueryBuilder,
+    FileManagerResultEnricher
 )
-from src.infrastructure.database.query_builders.file_details_query_builder import DocumentDetailsQueryBuilder
-from src.infrastructure.database.query_builders.file_details_result_enricher import DocumentDetailsResultEnricher
-from src.domain.dtos.file_details_dto import DocumentDetailsResponse
+from src.infrastructure.database.query_builders.file_details_query_builder import FileDetailsQueryBuilder
+from src.infrastructure.database.query_builders.file_details_result_enricher import FileDetailsResultEnricher
+from src.domain.dtos.file_details_dto import FileDetailsResponse
 from src.infrastructure.logging.logger_manager import get_logger
 from src.domain.dtos.extract_file_dto import (
-    ExtractionDocumentField,
+    ExtractionFileField,
     ExtractionFileDetailDTO,
     FileConfigurationFieldDTO,
     FileSecurityMappingDTO
@@ -35,14 +35,14 @@ class FileManagerRepository(IFileManagerRepository):
         filters: FileManagerFilter
     ) -> Dict:
         """
-        Replicates GetDocumentManager stored procedure logic.
+        Replicates GetFileManager stored procedure logic.
         Uses SQLAlchemy ORM - same code works for both PostgreSQL and SQL Server.
         """
         try:
-            logger.info(f"GetFileManagerList: status={filters.document_status}, docType={filters.doc_type}")
+            logger.info(f"GetFileManagerList: status={filters.file_status}, fileType={filters.file_type}")
             
             # Build query with all filters
-            query_builder = DocumentManagerQueryBuilder(db, filters)
+            query_builder = FileManagerQueryBuilder(db, filters)
             query_builder.build_query()
             
             # Get count and results
@@ -50,7 +50,7 @@ class FileManagerRepository(IFileManagerRepository):
             results = query_builder.get_results()
             
             # Enrich results with account info and SLA calculations
-            enricher = DocumentManagerResultEnricher(db, filters)
+            enricher = FileManagerResultEnricher(db, filters)
             items = enricher.enrich(results)
             
             logger.info(f"GetFileManagerList: returned {len(items)} items, total={total_count}")
@@ -70,23 +70,23 @@ class FileManagerRepository(IFileManagerRepository):
         self,
         db: Session,
         fileuid: UUID
-    ) -> DocumentDetailsResponse:
+    ) -> FileDetailsResponse:
         """
-        Replicates GetDocumentDetailsByDocUID stored procedure logic.
+        Replicates GetFileDetailsByFileUID stored procedure logic.
         Uses separated QueryBuilder and ResultEnricher for clean code.
         """
         try:
-            logger.info(f"GetDocumentDetailsByDocUID: fileuid={fileuid}")
+            logger.info(f"GetFileDetailsByFileUID: fileuid={fileuid}")
 
             # 1. Build query
-            query_builder = DocumentDetailsQueryBuilder(db, str(fileuid))
+            query_builder = FileDetailsQueryBuilder(db, str(fileuid))
             query_builder.build_query()
             
             # 2. Fetch raw DB record (single row)
             result = query_builder.get_one()
             
             if not result:
-                logger.info(f"GetDocumentDetailsByDocUID: No document found for {fileuid}")
+                logger.info(f"GetFileDetailsByFileUID: No file found for {fileuid}")
                 return {
                     "total": 0,
                     "page": 1,
@@ -95,10 +95,10 @@ class FileManagerRepository(IFileManagerRepository):
                 }
 
             # 3. Enrich result
-            enricher = DocumentDetailsResultEnricher(db)
+            enricher = FileDetailsResultEnricher(db)
             enriched = enricher.enrich(result)
 
-            logger.info(f"GetDocumentDetailsByDocUID: returning details for {fileuid}")
+            logger.info(f"GetFileDetailsByFileUID: returning details for {fileuid}")
             
             # Wrap in paginated structure to match likely API requirements
             return {
@@ -107,13 +107,13 @@ class FileManagerRepository(IFileManagerRepository):
             }
 
         except Exception as ex:
-            logger.error(f"GetDocumentDetailsByDocUID error: {ex}", exc_info=True)
+            logger.error(f"GetFileDetailsByFileUID error: {ex}", exc_info=True)
             raise
         
     def get_manual_extraction_config_fields_by_id(
         self,
         db: Session,
-        documentConfigurationId: int
+        fileConfigurationId: int
     ):
         """
         Replicates GetManualExtractionConfigFieldsById stored procedure logic.
@@ -123,16 +123,16 @@ class FileManagerRepository(IFileManagerRepository):
             from src.domain.entities.file_configuration import FileConfiguration
             from src.domain.entities.file_configuration_field import FileConfigurationField
 
-            logger.info(f"GetManualExtractionConfigFieldsById: id={documentConfigurationId}")
+            logger.info(f"GetManualExtractionConfigFieldsById: id={fileConfigurationId}")
 
             # 1. Verify Configuration exists and is active
             config = db.query(FileConfiguration).filter(
-                FileConfiguration.fileconfigurationid == documentConfigurationId,
+                FileConfiguration.fileconfigurationid == fileConfigurationId,
                 FileConfiguration.isactive == True
             ).first()
 
             if not config:
-                logger.warning(f"GetManualExtractionConfigFieldsById: Configuration {documentConfigurationId} not found or inactive")
+                logger.warning(f"GetManualExtractionConfigFieldsById: Configuration {fileConfigurationId} not found or inactive")
                 return {
                     "count": 0,
                     "resultobject": [],
@@ -141,7 +141,7 @@ class FileManagerRepository(IFileManagerRepository):
 
             # 2. Get Fields where DataType is 'Object'
             fields = db.query(FileConfigurationField).filter(
-                FileConfigurationField.fileconfigurationid == documentConfigurationId,
+                FileConfigurationField.fileconfigurationid == fileConfigurationId,
                 FileConfigurationField.isactive == True,
                 FileConfigurationField.datatype == 'Object'
             ).all()
@@ -167,53 +167,52 @@ class FileManagerRepository(IFileManagerRepository):
             logger.error(f"GetManualExtractionConfigFieldsById error: {ex}", exc_info=True)
             raise
 
-    def get_extract_document_api(
+    def get_extract_file_api(
         self,
         db: Session,
         fileuid: UUID
     ):
         """
-        Replicates GetExtractDocumentApi logic from .NET.
-        Returns extraction document details with configuration fields and security mappings.
+        Replicates GetExtractFileApi logic from .NET.
+        Returns extraction file details with configuration fields and security mappings.
         """
         try:
             from src.domain.entities.extraction_file_detail import ExtractionFileDetail
             from src.domain.entities.file_configuration import FileConfiguration
             from src.domain.entities.file_configuration_field import FileConfigurationField
             
-            logger.info(f"GetExtractDocumentApi: fileuid={fileuid}")
+            logger.info(f"GetExtractFileApi: fileuid={fileuid}")
             
             # Initialize response object
-            extraction_document_field = ExtractionDocumentField()
+            extraction_file_field = ExtractionFileField()
             
-            # 1. Get ExtractionDocumentDetail by fileuid where isactive = true
-            # C#: await _appDbContext.ExtractionDocumentDetail.FirstOrDefaultAsync(x => x.DocUID == docuId && x.IsActive == true)
+            # 1. Get ExtractionFileDetail by fileuid where isactive = true
             item = db.query(ExtractionFileDetail).filter(
                 ExtractionFileDetail.fileuid == fileuid,
                 ExtractionFileDetail.isactive == True
             ).first()
             
             if not item:
-                logger.info(f"GetExtractDocumentApi: No active extraction document found for fileuid={fileuid}")
-                return extraction_document_field.model_dump()
+                logger.info(f"GetExtractFileApi: No active extraction file found for fileuid={fileuid}")
+                return extraction_file_field.model_dump()
             
             # Convert entity to DTO
-            extraction_document_field.extraction_document_detail = ExtractionFileDetailDTO.model_validate(item)
+            extraction_file_field.extraction_file_detail = ExtractionFileDetailDTO.model_validate(item)
             
             # 2. If classification exists, get configuration details
             if item.classification and item.classification.strip():
-                # Get DocumentConfiguration by classification name
-                # C#: await _appDbContext.DocumentConfigurations.FirstOrDefaultAsync(x => x.ConfigurationName == item.Classification && x.IsActive == true)
+                # Get FileConfiguration by classification name
+                # C#: await _appDbContext.FileConfigurations.FirstOrDefaultAsync(x => x.ConfigurationName == item.Classification && x.IsActive == true)
                 file_configuration = db.query(FileConfiguration).filter(
                     FileConfiguration.configuration_name == item.classification,
                     FileConfiguration.isactive == True
                 ).first()
                 
                 if file_configuration:
-                    extraction_document_field.configuration_id = file_configuration.fileconfigurationid
+                    extraction_file_field.configuration_id = file_configuration.fileconfigurationid
                     
                     # 3. Get all configuration fields for this configuration
-                    # C#: await _appDbContext.DocumentConfigurationFields.Where(x => x.DocumentConfigurationId == documentConfiguration.Id && x.IsActive == true).ToListAsync()
+                    # C#: await _appDbContext.FileConfigurationFields.Where(x => x.FileConfigurationId == fileConfiguration.Id && x.IsActive == true).ToListAsync()
                     file_configuration_fields = db.query(FileConfigurationField).filter(
                         FileConfigurationField.fileconfigurationid == file_configuration.fileconfigurationid,
                         FileConfigurationField.isactive == True
@@ -221,16 +220,16 @@ class FileManagerRepository(IFileManagerRepository):
                     
                     if file_configuration_fields:
                         # 4. Filter Object type fields
-                        # C#: var objectFiledList = documentConfigurationFieldList.Where(x => x.DataType == DataTypes.Object).ToList()
+                        # C#: var objectFiledList = fileConfigurationFieldList.Where(x => x.DataType == DataTypes.Object).ToList()
                         object_fields = [f for f in file_configuration_fields if f.datatype == 'Object']
                         
                         if object_fields:
-                            extraction_document_field.object_fields = [
+                            extraction_file_field.object_fields = [
                                 FileConfigurationFieldDTO.model_validate(f) for f in object_fields
                             ]
                         
                         # Set all configuration fields
-                        extraction_document_field.file_configuration_fields = [
+                        extraction_file_field.file_configuration_fields = [
                             FileConfigurationFieldDTO.model_validate(f) for f in file_configuration_fields
                         ]
                 
@@ -239,26 +238,22 @@ class FileManagerRepository(IFileManagerRepository):
                 if item.classification in ["Rage", "BrokerageMSBilling"]:
                     security_mappings = self._get_file_security_by_fileuid(db, fileuid)
                     if security_mappings:
-                        extraction_document_field.file_security_mappings = security_mappings
+                        extraction_file_field.file_security_mappings = security_mappings
             
-            # 6. Check for update document
-            # C#: var documentUpdate = await _appDbContext.ExtractionDocumentDetail
-            #     .Where(x => x.IsActive == true && x.Update_document_id == docuId)
-            #     .Select(x => x.DocUID)
-            #     .FirstOrDefaultAsync()
-            update_document = db.query(ExtractionFileDetail.fileuid).filter(
+            # 6. Check for update file
+            update_file = db.query(ExtractionFileDetail.fileuid).filter(
                 ExtractionFileDetail.isactive == True,
                 ExtractionFileDetail.update_file_id == fileuid
             ).first()
             
-            if update_document and update_document[0]:
-                extraction_document_field.update_file_id = str(update_document[0])
+            if update_file and update_file[0]:
+                extraction_file_field.update_file_id = str(update_file[0])
             
-            logger.info(f"GetExtractDocumentApi: Successfully retrieved extraction document for fileuid={fileuid}")
-            return extraction_document_field.model_dump()
+            logger.info(f"GetExtractFileApi: Successfully retrieved extraction file for fileuid={fileuid}")
+            return extraction_file_field.model_dump()
             
         except Exception as ex:
-            logger.error(f"GetExtractDocumentApi error: {ex}", exc_info=True)
+            logger.error(f"GetExtractFileApi error: {ex}", exc_info=True)
             raise Exception(f"An error occurred while retrieving data from the database: {str(ex)}")
     
     def _get_file_security_by_fileuid(
@@ -268,9 +263,9 @@ class FileManagerRepository(IFileManagerRepository):
     ) -> List[FileSecurityMappingDTO]:
         """
         Get file security mappings by fileuid.
-        Replicates GetDocumentSecurityByDocuid from .NET.
+        Replicates GetFileSecurityByFileuid from .NET.
         
-        Note: The .NET code uses a stored procedure [alts].[GetDocumentSecurityByDocuid],
+        Note: The .NET code uses a stored procedure [alts].[GetFileSecurityByFileuid],
         but since stored procedures are not in use, we implement this as a direct query.
         """
         try:
@@ -296,17 +291,17 @@ class FileManagerRepository(IFileManagerRepository):
             return []
 
 
-    def get_extract_documents_by_file_uid(
+    def get_extract_files_by_file_uid(
         self,
         db: Session,
         fileuid: UUID
     ) -> List[Any]:
         """
-        Replicates GetExtractDocumentsByDocUIDAsync logic.
+        Replicates GetExtractFilesByFileUIDAsync logic.
         """
         try:
             from src.domain.entities.extract_file import ExtractFile
-            logger.info(f"GetExtractDocumentsByDocUIDAsync: fileuid={fileuid}")
+            logger.info(f"GetExtractFilesByFileUIDAsync: fileuid={fileuid}")
             
             results = db.query(ExtractFile).filter(
                 ExtractFile.fileuid == fileuid,
@@ -315,10 +310,10 @@ class FileManagerRepository(IFileManagerRepository):
             
             return results
         except Exception as ex:
-            logger.error(f"GetExtractDocumentsByDocUIDAsync error: {ex}", exc_info=True)
+            logger.error(f"GetExtractFilesByFileUIDAsync error: {ex}", exc_info=True)
             raise
 
-    def add_document_comment(
+    def add_file_comment(
         self,
         db: Session,
         fileuid: UUID,
@@ -332,47 +327,47 @@ class FileManagerRepository(IFileManagerRepository):
             from src.domain.entities.file_manager import FileManager
             from datetime import datetime
             
-            logger.info(f"AddDocumentComment: fileuid={fileuid}")
+            logger.info(f"AddFileComment: fileuid={fileuid}")
             
-            # Fetch document
-            document = db.query(FileManager).filter(
+            # Fetch file
+            file = db.query(FileManager).filter(
                 FileManager.fileuid == fileuid
             ).first()
             
-            if not document:
-                logger.error(f"AddDocumentComment: Document not found for fileuid={fileuid}")
+            if not file:
+                logger.error(f"AddFileComment: File not found for fileuid={fileuid}")
                 return False
                 
             # Update fields
-            document.comments = comment
-            document.statuscomment = "Comment Added"
-            # document.updated = datetime.utcnow()
-            # document.updatedby = created_by or "System"
+            file.comments = comment
+            file.statuscomment = "Comment Added"
+            # file.updated = datetime.utcnow()
+            # file.updatedby = created_by or "System"
             
             db.commit()
-            logger.info(f"AddDocumentComment: Successfully updated fileuid={fileuid}")
+            logger.info(f"AddFileComment: Successfully updated fileuid={fileuid}")
             return True
             
         except Exception as ex:
-            logger.error(f"AddDocumentComment error: {ex}", exc_info=True)
+            logger.error(f"AddFileComment error: {ex}", exc_info=True)
             db.rollback()
             return False
 
-    def update_extract_document_api(
+    def update_extract_file_api(
         self,
         db: Session,
         request: UpdateExtractFileRequest
     ) -> ResponseObjectModel:
         """
-        Skeleton for UpdateExtractDocumentApi.
+        Skeleton for UpdateExtractFileApi.
         """
         try:
-            logger.info(f"UpdateExtractDocumentApi skeleton called for fileuid={request.extraction_document_detail.fileuid}")
+            logger.info(f"UpdateExtractFileApi skeleton called for fileuid={request.extraction_file_detail.fileuid}")
             
             return ResponseObjectModel(
                 result_code="SUCCESS",
-                result_message="Update Document save successful (Skeleton)"
+                result_message="Update File save successful (Skeleton)"
             )
         except Exception as ex:
-            logger.error(f"UpdateExtractDocumentApi error: {ex}", exc_info=True)
+            logger.error(f"UpdateExtractFileApi error: {ex}", exc_info=True)
             raise

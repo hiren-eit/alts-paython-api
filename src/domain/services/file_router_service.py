@@ -9,7 +9,7 @@ class FileRouterService:
 
     def get_multiple_entities_or_investor(self, db: Session, file_uid: UUID):
         """
-        Get extract documents by file_uid.
+        Get extract files by file_uid.
         Replicates GetMultipleEntitiesORInvestor logic.
         """
         return self.repo.get_multiple_entities_or_investor(db, file_uid)

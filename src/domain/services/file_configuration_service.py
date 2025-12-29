@@ -12,39 +12,39 @@ class FileConfigurationService:
     def get_all_active_file_configuration_list(self, db: Session):
         """
         Returns all active file configuration list with total count.
-        Replicates the GetAllActiveDocumentConfigurationList stored procedure logic.
+        Replicates the GetAllActiveFileConfigurationList stored procedure logic.
         """
         return self.repo.get_all_active_file_configuration_list(db)
 
 
-    async def save_file_configuration(self, db: Session, documentConfiguration: FileConfiguration):
+    async def save_file_configuration(self, db: Session, fileConfiguration: FileConfiguration):
         """
         Add file configuration.
-        Replicates the AddDocumentConfiguration stored procedure logic.
+        Replicates the AddFileConfiguration stored procedure logic.
         """
-        return await self.repo.save_file_configuration(db, documentConfiguration)
+        return await self.repo.save_file_configuration(db, fileConfiguration)
 
     
-    async def update_file_configuration(self, db: Session, documentConfiguration: FileConfiguration):
+    async def update_file_configuration(self, db: Session, fileConfiguration: FileConfiguration):
         """
         Update file configuration.
-        Replicates the UpdateDocumentConfiguration stored procedure logic.
+        Replicates the UpdateFileConfiguration stored procedure logic.
         """
-        return await self.repo.update_file_configuration(db, documentConfiguration)
+        return await self.repo.update_file_configuration(db, fileConfiguration)
 
 
-    async def update_file_action_configuration(self, db: Session,documentConfiguration: FileConfiguration):
+    async def update_file_action_configuration(self, db: Session,fileConfiguration: FileConfiguration):
         """
         Update file configuration action.
-        Replicates the UpdateDocumentConfigurationAction stored procedure logic.
+        Replicates the UpdateFileConfigurationAction stored procedure logic.
         """
-        return await self.repo.update_file_action_configuration(db, documentConfiguration)
+        return await self.repo.update_file_action_configuration(db, fileConfiguration)
 
     
     def get_file_configuration_by_id(self, db: Session, fileconfigurationid: int):
         """
         Returns file configuration by id.
-        Replicates the GetDocumentConfigurationByID stored procedure logic.
+        Replicates the GetFileConfigurationByID stored procedure logic.
         """
         return self.repo.get_file_configuration_by_id(db, fileconfigurationid)
 
@@ -52,14 +52,14 @@ class FileConfigurationService:
     def get_file_configuration_type(self, db: Session):
         """
         Returns file configuration type.
-        Replicates the GetDocumentConfigurationType stored procedure logic.
+        Replicates the GetFileConfigurationType stored procedure logic.
         """
         return self.repo.get_file_configuration_type(db)
 
     
     def get_file_configuration_by_schema_type(self, db: Session, schematype: str):
         """
-        Returns document configuration by schema type.
-        Replicates the GetDocumentConfigurationBySchemaType stored procedure logic.
+        Returns file configuration by schema type.
+        Replicates the GetFileConfigurationBySchemaType stored procedure logic.
         """
         return self.repo.get_file_configuration_by_schema_type(db, schematype)

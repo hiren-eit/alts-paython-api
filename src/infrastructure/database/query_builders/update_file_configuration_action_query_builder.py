@@ -11,9 +11,9 @@ from src.domain.entities.file_configuration_field import FileConfigurationField
 from src.domain.entities.file_configuration_log import FileConfigurationLog
 from datetime import datetime, timezone
 
-class UpdateDocumentConfigurationActionQueryBuilder:
+class UpdateFileConfigurationActionQueryBuilder:
     """
-    Handles database operations for UpdateDocumentConfigurationAction
+    Handles database operations for UpdateFileConfigurationAction
     """
     def __init__(self, db: Session):
         self.db = db
@@ -30,11 +30,11 @@ class UpdateDocumentConfigurationActionQueryBuilder:
         except Exception as ex:
             return False
 
-    def get_document_configuration(self, id: int) -> FileConfiguration:
-        # Fetch the document configuration from the database by its ID
+    def get_file_configuration(self, id: int) -> FileConfiguration:
+        # Fetch the file configuration from the database by its ID
         return self.db.query(FileConfiguration).filter(FileConfiguration.fileid == id).first()
 
-    def update_document_configuration_in_db(self):
+    def update_file_configuration_in_db(self):
         try:
             self.db.commit()
         except Exception as ex:

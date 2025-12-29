@@ -8,9 +8,9 @@ class IFileActivityRepository(ABC):
     """Interface for FileActivity Repository"""
     
     @abstractmethod
-    def get_file_activity(self, db: Session, docuid: UUID) -> List[FileActivity]:
+    def get_file_activity(self, db: Session, fileuid: UUID) -> List[FileActivity]:
         """
-        Get file activity logs by docuid.
-        Replicates GetDocumentActivityByDocUID stored procedure logic.
+        Get file activity logs by fileuid.
+        Replicates GetFileActivityByFileUID stored procedure logic.
         """
         pass

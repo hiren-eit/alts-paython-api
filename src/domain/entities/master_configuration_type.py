@@ -9,6 +9,6 @@ class MasterConfigurationType(BaseEntity):
 
     masterconfigurationtypeid = Column(BigInteger, primary_key=True, autoincrement=True)
     displayname = Column(String(255))
-    type = Column(String(50)) # Added to match SQL usage (Source, DocumentType, etc.)
+    type = Column(String(50)) # Added to match SQL usage (Source, FileType, etc.)
     
     # isactive, created, createdby, updated, updatedby are inherited from BaseEntity

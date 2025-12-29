@@ -12,7 +12,7 @@ class IFileRouterRepository:
         file_uid: UUID
     ) -> List[Any]:
         """
-        Returns list of extract documents by file_uid.
+        Returns list of extract files by file_uid.
         Replicates GetMultipleEntitiesORInvestor logic.
         """
         raise NotImplementedError

@@ -11,9 +11,9 @@ from src.domain.entities.file_configuration_field import FileConfigurationField
 from src.domain.entities.file_configuration_log import FileConfigurationLog
 from datetime import datetime, timezone
 
-class SaveDocumentConfigurationQueryBuilder:
+class SaveFileConfigurationQueryBuilder:
     """
-    Handles ALL database operations for SaveDocumentConfiguration
+    Handles ALL database operations for SaveFileConfiguration
     """
 
     def __init__(self, db: Session):
@@ -25,8 +25,8 @@ class SaveDocumentConfigurationQueryBuilder:
         )
         return self.db.execute(stmt).scalar_one_or_none() is not None
 
-    def create_document_with_fields(
-        self, document_configuration: FileFileConfigurationDTO
+    def create_file_with_fields(
+        self, file_configuration: FileFileConfigurationDTO
     ) -> Tuple[FileConfiguration, int]:
         """
         Creates FileConfiguration + Fields.
@@ -35,25 +35,25 @@ class SaveDocumentConfigurationQueryBuilder:
         sub_rows_to_add: List[FileConfigurationField] = []
 
         configuration = FileConfiguration(
-            configurationname=document_configuration.configuration_name,
-            description=document_configuration.description,
-            sla_priority=document_configuration.sla_priority,
-            sla_days=document_configuration.sla_days,
-            schematype=document_configuration.schema_type,
-            extraction=document_configuration.extraction,
-            filetypeid=document_configuration.document_type_id,
-            reason=document_configuration.reason,
-            fieldtype=document_configuration.field_type,
-            ingestioncode=document_configuration.ingestion_code,
-            created=document_configuration.created,
-            createdby=len(document_configuration.created_by),
-            isactive=document_configuration.is_active,
+            configurationname=file_configuration.configuration_name,
+            description=file_configuration.description,
+            sla_priority=file_configuration.sla_priority,
+            sla_days=file_configuration.sla_days,
+            schematype=file_configuration.schema_type,
+            extraction=file_configuration.extraction,
+            filetypeid=file_configuration.file_type_id,
+            reason=file_configuration.reason,
+            fieldtype=file_configuration.field_type,
+            ingestioncode=file_configuration.ingestion_code,
+            created=file_configuration.created,
+            createdby=len(file_configuration.created_by),
+            isactive=file_configuration.is_active,
         )
 
         self.db.add(configuration)
         self.db.flush()  # PK available
 
-        for field in document_configuration.fields_collection:
+        for field in file_configuration.fields_collection:
             root_field = FileConfigurationField(
                 fieldname=field.field_name,
                 datatype=field.data_type,

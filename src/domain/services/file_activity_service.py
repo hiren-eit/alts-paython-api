@@ -8,8 +8,8 @@ class FileActivityService:
     def __init__(self, repository: IFileActivityRepository):
         self.repo = repository
 
-    def get_file_activity_logs(self, db: Session, docuid: UUID) -> List[FileActivity]:
+    def get_file_activity_logs(self, db: Session, fileuid: UUID) -> List[FileActivity]:
         """
         Get file activity logs.
         """
-        return self.repo.get_file_activity(db, docuid)
+        return self.repo.get_file_activity(db, fileuid)

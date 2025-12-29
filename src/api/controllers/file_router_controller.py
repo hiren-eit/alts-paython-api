@@ -41,14 +41,14 @@ class FileRouterController(BaseController):
     Controller for File Routing operations.
     """
 
-    @router.get("/extraction-data", response_model=List[ExtractFile], summary="Get Extraction Data by Document UID")
+    @router.get("/extraction-data", response_model=List[ExtractFile], summary="Get Extraction Data by File UID")
     def get_extraction_data(
-        file_uid: UUID = Query(..., alias="DocUID", description="The distinct file identifier (FileUID)"),
+        file_uid: UUID = Query(..., alias="FileUID", description="The distinct file identifier (FileUID)"),
         service: FileRouterService = Depends(get_file_router_service),
         db: Session = Depends(get_db)
     ):
         """
-        Retrieve multiple entities or investor extraction data for a given document (file).
+        Retrieve multiple entities or investor extraction data for a given file.
         Returns an empty list if an error occurs.
         """
         try:

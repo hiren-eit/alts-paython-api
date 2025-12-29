@@ -11,12 +11,12 @@ logger = get_logger(__name__)
 class FileActivityRepository(IFileActivityRepository):
     """SQL Server implementation of FileActivity repository"""
 
-    def get_file_activity(self, db: Session, docuid: UUID) -> List[FileActivity]:
+    def get_file_activity(self, db: Session, fileuid: UUID) -> List[FileActivity]:
         """
         Skeleton implementation for GetFileActivityLogs.
         """
         try:
-            logger.info(f"SQL Server: GetFileActivityLogs called for {docuid}")
+            logger.info(f"SQL Server: GetFileActivityLogs called for {fileuid}")
             # Return empty list as skeleton
             return []
         except Exception as ex:

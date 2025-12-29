@@ -17,8 +17,8 @@ from src.domain.entities.file_process_log import FileProcessLog
 from src.domain.entities.file_activity import FileActivity
 from src.domain.entities.master_configuration_type import MasterConfigurationType
 from src.domain.enums.business_rule_enums import (
-    BusinessRuleTypes, ChangeType, DocumentProcessStage, 
-    DocumentProcessingState, DocumentProcessStatus
+    BusinessRuleTypes, ChangeType, FileProcessStage, 
+    FileProcessingState, FileProcessStatus
 )
 
 logger = get_logger(__name__)
@@ -51,7 +51,7 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                 updated=datetime.datetime.utcnow(),
                 password=rule_data.get('password'),
                 groupcode=rule_data.get('groupcode'),
-                documenttypeid=rule_data.get('documenttypeid'),
+                filetypeid=rule_data.get('filetypeid'),
                 sourceid=rule_data.get('sourceid')
             )
             
@@ -202,7 +202,7 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                 updated=datetime.datetime.utcnow(),
                 password=rule_data.get('password'),
                 groupcode=rule_data.get('groupcode'),
-                documenttypeid=rule_data.get('documenttypeid'),
+                filetypeid=rule_data.get('filetypeid'),
                 sourceid=rule_data.get('sourceid')
             )
             
@@ -268,78 +268,78 @@ class BusinessRuleRepository(IBusinessRuleRepository):
 
     def update_stage(self, db: Session) -> Any:
         try:
-            # Fetch Docs
-            documents = db.query(FileManager).filter(
-                FileManager.stage == DocumentProcessStage.DocReady.value
+            # Fetch Files
+            files = db.query(FileManager).filter(
+                FileManager.stage == FileProcessStage.DocReady.value
             ).all()
 
             classification_rules = self._get_business_rules(db, BusinessRuleTypes.Classification)
             ignore_rules = self._get_business_rules(db, BusinessRuleTypes.Ignore)
 
-            for document in documents:
+            for file in files:
                 # 1. Classification
-                matched_class_rule = self._get_matching_classification_rule(document, classification_rules)
+                matched_class_rule = self._get_matching_classification_rule(file, classification_rules)
                 
-                if matched_class_rule and matched_class_rule.documenttypeid:
-                    if document.stage != DocumentProcessStage.Classified.value:
-                        doc_type = db.query(MasterConfigurationType).filter(MasterConfigurationType.masterconfigurationtypeid == matched_class_rule.documenttypeid).first()
-                        if doc_type:
-                            logger.info(f"BUSINESS RULE : Document {document.fileuid} classified.")
+                if matched_class_rule and matched_class_rule.filetypeid:
+                    if file.stage != FileProcessStage.Classified.value:
+                        file_type = db.query(MasterConfigurationType).filter(MasterConfigurationType.masterconfigurationtypeid == matched_class_rule.filetypeid).first()
+                        if file_type:
+                            logger.info(f"BUSINESS RULE : File {file.fileuid} classified.")
                             
-                            document.stage = DocumentProcessStage.Classified.value
-                            document.fileprocessstage = DocumentProcessingState.RuleProcessor.value
+                            file.stage = FileProcessStage.Classified.value
+                            file.fileprocessstage = FileProcessingState.RuleProcessor.value
                             
-                            status_comment = f"Document matched with classified rule and updated Document Type as {doc_type.displayname}" \
-                                if doc_type.displayname else "Document matched with classified rule"
-                            document.statuscomment = status_comment
-                            document.filetypeproceesrule = doc_type.displayname
-                            document.rule = matched_class_rule.uniqueruleid
-                            document.businessruleapplieddate = datetime.datetime.utcnow()
+                            status_comment = f"File matched with classified rule and updated File Type as {file_type.displayname}" \
+                                if file_type.displayname else "File matched with classified rule"
+                            file.statuscomment = status_comment
+                            file.filetypeproceesrule = file_type.displayname
+                            file.rule = matched_class_rule.uniqueruleid
+                            file.businessruleapplieddate = datetime.datetime.utcnow()
 
                 # 2. Ignore
-                ignore_rule = self._is_rule_applied(document, ignore_rules)
+                ignore_rule = self._is_rule_applied(file, ignore_rules)
                 
                 if ignore_rule:
-                    if document.stage != DocumentProcessStage.Ignored.value:
-                        logger.info(f"BUSINESS RULE : Document {document.fileuid} marked as ignored.")
+                    if file.stage != FileProcessStage.Ignored.value:
+                        logger.info(f"BUSINESS RULE : File {file.fileuid} marked as ignored.")
                         
-                        document.stage = DocumentProcessStage.Ignored.value
-                        document.fileprocessstage = DocumentProcessingState.RuleProcessor.value
-                        document.status = DocumentProcessStatus.Ignored.value
-                        document.ignoredby = 0 # System ? 
-                        document.ignoredon = datetime.datetime.utcnow()
-                        document.rule = ignore_rule.uniqueruleid
-                        document.statuscomment = "Document match With ignored Rule"
-                        document.businessruleapplieddate = datetime.datetime.utcnow()
+                        file.stage = FileProcessStage.Ignored.value
+                        file.fileprocessstage = FileProcessingState.RuleProcessor.value
+                        file.status = FileProcessStatus.Ignored.value
+                        file.ignoredby = 0 # System ? 
+                        file.ignoredon = datetime.datetime.utcnow()
+                        file.rule = ignore_rule.uniqueruleid
+                        file.statuscomment = "File match With ignored Rule"
+                        file.businessruleapplieddate = datetime.datetime.utcnow()
                         
-                        self._log_file_process(db, document, ignore_rule.uniqueruleid, "Document match With ignored Rule", DocumentProcessStatus.Ignored.value)
+                        self._log_file_process(db, file, ignore_rule.uniqueruleid, "File match With ignored Rule", FileProcessStatus.Ignored.value)
 
-                elif document.stage == DocumentProcessStage.Classified.value:
-                    logger.info(f"BUSINESS RULE : Document {document.fileuid} moved to InProgress.")
-                    document.statuscomment = "Document match With Classified Rule"
-                    document.businessruleapplieddate = datetime.datetime.utcnow()
+                elif file.stage == FileProcessStage.Classified.value:
+                    logger.info(f"BUSINESS RULE : File {file.fileuid} moved to InProgress.")
+                    file.statuscomment = "File match With Classified Rule"
+                    file.businessruleapplieddate = datetime.datetime.utcnow()
                     
-                    self._log_file_process(db, document, ignore_rule.uniqueruleid if ignore_rule else None, "Document match With Classified Rule", document.status)
+                    self._log_file_process(db, file, ignore_rule.uniqueruleid if ignore_rule else None, "File match With Classified Rule", file.status)
                     
-                    document.stage = DocumentProcessStage.ExtractReady.value
+                    file.stage = FileProcessStage.ExtractReady.value
                     
-                    self._log_file_process(db, document, ignore_rule.uniqueruleid if ignore_rule else None, "Document is ExtractReady", document.status)
+                    self._log_file_process(db, file, ignore_rule.uniqueruleid if ignore_rule else None, "File is ExtractReady", file.status)
                     
                 else:
-                    logger.info(f"BUSINESS RULE : Document {document.fileuid} is not match on classified and ignore.")
-                    document.filetypeproceesrule = "Unknown"
-                    document.stage = DocumentProcessStage.NotMacthRule.value
-                    document.fileprocessstage = DocumentProcessingState.RuleProcessor.value
-                    document.statuscomment = "Document Not match with classified and ignore."
-                    document.businessruleapplieddate = datetime.datetime.utcnow()
+                    logger.info(f"BUSINESS RULE : File {file.fileuid} is not match on classified and ignore.")
+                    file.filetypeproceesrule = "Unknown"
+                    file.stage = FileProcessStage.NotMacthRule.value
+                    file.fileprocessstage = FileProcessingState.RuleProcessor.value
+                    file.statuscomment = "File Not match with classified and ignore."
+                    file.businessruleapplieddate = datetime.datetime.utcnow()
                     
-                    self._log_file_process(db, document, None, "Document Not match with classified and ignore.", document.status)
+                    self._log_file_process(db, file, None, "File Not match with classified and ignore.", file.status)
                     
-                    document.stage = DocumentProcessStage.ExtractReady.value
-                    self._log_file_process(db, document, None, "Document is ExtractReady", document.status)
+                    file.stage = FileProcessStage.ExtractReady.value
+                    self._log_file_process(db, file, None, "File is ExtractReady", file.status)
 
             db.commit()
-            return documents
+            return files
         except Exception as ex:
             logger.error(f"BUSINESS RULE : Error occurred while updating Status: {ex}", exc_info=True)
             db.rollback()
@@ -348,17 +348,17 @@ class BusinessRuleRepository(IBusinessRuleRepository):
     def _get_business_rules(self, db: Session, rule_type: str) -> List[BusinessRule]:
         return db.query(BusinessRule).filter(BusinessRule.ruletype == rule_type).all()
 
-    def _get_matching_classification_rule(self, document: FileManager, rules: List[BusinessRule]) -> Optional[BusinessRule]:
-        if not document.file_metadata:
+    def _get_matching_classification_rule(self, file: FileManager, rules: List[BusinessRule]) -> Optional[BusinessRule]:
+        if not file.file_metadata:
             return None
         
         try:
-            metadata = json.loads(document.file_metadata)
+            metadata = json.loads(file.file_metadata)
         except json.JSONDecodeError:
-            logger.error(f"BUSINESS RULE : Error parsing metadata for document {document.fileuid}")
+            logger.error(f"BUSINESS RULE : Error parsing metadata for file {file.fileuid}")
             return None
         
-        if document.harvestsource == "Email":
+        if file.harvestsource == "Email":
              return self._has_matching_email_rules(metadata, rules)
         else:
              file_name = metadata.get("File_Name")
@@ -366,16 +366,16 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                  return self._check_for_matching_rule(file_name, rules)
         return None
 
-    def _is_rule_applied(self, document: FileManager, rules: List[BusinessRule]) -> Optional[BusinessRule]:
-        if not document.file_metadata:
+    def _is_rule_applied(self, file: FileManager, rules: List[BusinessRule]) -> Optional[BusinessRule]:
+        if not file.file_metadata:
             return None
         
         try:
-            metadata = json.loads(document.file_metadata)
+            metadata = json.loads(file.file_metadata)
         except:
              return None
 
-        if document.harvestsource == "Email":
+        if file.harvestsource == "Email":
             return self._has_matching_email_rules(metadata, rules)
         else:
             file_name = metadata.get("File_Name")
@@ -440,22 +440,22 @@ class BusinessRuleRepository(IBusinessRuleRepository):
         
         return False
 
-    def _log_file_process(self, db: Session, document: FileManager, rule_id: Optional[str], comment: str, status: Optional[str]):
+    def _log_file_process(self, db: Session, file: FileManager, rule_id: Optional[str], comment: str, status: Optional[str]):
         log = FileProcessLog(
-            fileuid=document.fileuid,
-            stage=document.stage,
+            fileuid=file.fileuid,
+            stage=file.stage,
             status=status,
             ruleid=rule_id,
             statuscomment=comment,
-            fileprocessstage=DocumentProcessingState.RuleProcessor.value,
+            fileprocessstage=FileProcessingState.RuleProcessor.value,
             created=datetime.datetime.utcnow(),
             isactive=True
         )
         activity = FileActivity(
-            fileuid=document.fileuid,
+            fileuid=file.fileuid,
             status=status,
-            stage=document.stage,
-            fileprocessingstage=DocumentProcessingState.RuleProcessor.value,
+            stage=file.stage,
+            fileprocessingstage=FileProcessingState.RuleProcessor.value,
             statuscomment=comment,
             created=datetime.datetime.utcnow(),
             isactive=True
@@ -487,10 +487,8 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                 input_model = input_data
 
             SourceTypeAlias = aliased(MasterConfigurationType, name="SourceType")
-            DocumentTypeAlias = aliased(MasterConfigurationType, name="DocumentType")
+            FileTypeAlias = aliased(MasterConfigurationType, name="FileType")
 
-            # Usage Count Subquery
-            # SQL: (SELECT COUNT(*) FROM alts.Document WHERE [Rule] = [Rules].UniqueRuleId)
             usage_subquery = db.query(func.count(FileManager.fileid)).filter(
                 FileManager.rule == BusinessRule.uniqueruleid
             ).correlate(BusinessRule).as_scalar().label("Usage")
@@ -510,12 +508,12 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                 func.coalesce(SourceTypeAlias.displayname, 'None').label("Source"),
                 BusinessRule.uniqueruleid.label("UniqueRuleId"),
                 BusinessRule.ruletype.label("RuleType"),
-                DocumentTypeAlias.displayname.label("Document"),
+                FileTypeAlias.displayname.label("File"),
                 func.coalesce(get_json_v('FileName'), '').label("FileName"),
                 func.coalesce(get_json_v('SenderAddress'), '').label("SenderAddress"),
                 func.coalesce(get_json_v('Subject'), '').label("Subject"),
                 func.coalesce(get_json_v('EmailBody'), '').label("EmailBody"),
-                BusinessRule.documenttypeid.label("DocumentTypeId"),
+                BusinessRule.filetypeid.label("FileTypeId"),
                 BusinessRule.created.label("Created"),
                 BusinessRule.createdby.label("CreatedBy"),
                 BusinessRule.updated.label("Updated"),
@@ -523,13 +521,13 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                 BusinessRule.isactive.label("IsActive"),
                 BusinessRule.password.label("Password"),
                 BusinessRule.groupcode.label("GroupCode"),
-                DocumentTypeAlias.displayname.label("DocumentType"),
+                FileTypeAlias.displayname.label("FileType"),
                 usage_subquery
             )
 
             # Left Joins
             query = query.outerjoin(SourceTypeAlias, BusinessRule.sourceid == SourceTypeAlias.masterconfigurationtypeid)
-            query = query.outerjoin(DocumentTypeAlias, BusinessRule.documenttypeid == DocumentTypeAlias.masterconfigurationtypeid)
+            query = query.outerjoin(FileTypeAlias, BusinessRule.filetypeid == FileTypeAlias.masterconfigurationtypeid)
 
             # Filters
             filters = [BusinessRule.ruletype == input_model.RuleType]
@@ -557,12 +555,12 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                     try:
                          # Attempt to match UUID to BigInteger if that's what's passed (unlikely if strictly UUID)
                          # Assuming it matches the entity type
-                         filters.append(BusinessRule.documenttypeid == input_model.ContentType)
+                         filters.append(BusinessRule.filetypeid == input_model.ContentType)
                     except:
                          pass
             elif input_model.ContentType:
                  # Even if not classification, the SQL says:
-                 # AND (@RuleType <> 'Classification' OR (@ContentType IS NULL OR Rules.DocumentTypeId = @ContentType))
+                 # AND (@RuleType <> 'Classification' OR (@ContentType IS NULL OR Rules.FileTypeId = @ContentType))
                  # Wait, logic is: IF CN, check CT. IF NOT CN, logic is always true (unless CT is null?)
                  # Re-reading SQL: Rules.RuleType = @RuleType AND ... AND (@RuleType <> 'Classification' OR ...)
                  # So if RuleType != 'Classification', the OR condition is always true.
@@ -574,7 +572,7 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                 search_filters = or_(
                     BusinessRule.uniqueruleid.ilike(st),
                     BusinessRule.ruletype.ilike(st),
-                    DocumentTypeAlias.displayname.ilike(st),
+                    FileTypeAlias.displayname.ilike(st),
                     get_json_v('FileName').ilike(st),
                     get_json_v('SenderAddress').ilike(st),
                     get_json_v('Subject').ilike(st),
@@ -640,8 +638,8 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                 query = query.order_by(sort_order_fn(BusinessRule.uniqueruleid))
             elif sc == 'ruletype':
                 query = query.order_by(sort_order_fn(BusinessRule.ruletype))
-            elif sc == 'document':
-                query = query.order_by(sort_order_fn(DocumentTypeAlias.displayname))
+            elif sc == 'file':
+                query = query.order_by(sort_order_fn(FileTypeAlias.displayname))
             elif sc == 'filename':
                 query = query.order_by(sort_order_fn(get_json_v('FileName')))
             elif sc == 'senderaddress':
@@ -667,12 +665,12 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                     "Source": r.Source,
                     "UniqueRuleId": r.UniqueRuleId,
                     "RuleType": r.RuleType,
-                    "Document": r.Document,
+                    "File": r.File,
                     "FileName": r.FileName,
                     "SenderAddress": r.SenderAddress,
                     "Subject": r.Subject,
                     "EmailBody": r.EmailBody,
-                    "DocumentTypeId": str(r.DocumentTypeId) if r.DocumentTypeId else None,
+                    "FileTypeId": str(r.FileTypeId) if r.FileTypeId else None,
                     "Created": r.Created.isoformat() if r.Created else None,
                     "CreatedBy": r.CreatedBy,
                     "Updated": r.Updated.isoformat() if r.Updated else None,
@@ -681,7 +679,7 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                     "Password": r.Password,
                     "GroupCode": r.GroupCode,
                     "Usage": r.Usage,
-                    "DocumentType": r.DocumentType
+                    "FileType": r.FileType
                 })
 
             return {
@@ -701,7 +699,7 @@ class BusinessRuleRepository(IBusinessRuleRepository):
             from sqlalchemy.orm import aliased
 
             SourceTypeAlias = aliased(MasterConfigurationType, name="SourceType")
-            DocumentTypeAlias = aliased(MasterConfigurationType, name="DocumentType")
+            FileTypeAlias = aliased(MasterConfigurationType, name="FileType")
 
             # Determine the value expression
             if filter_field in ['Subject', 'EmailBody', 'SenderAddress']:
@@ -723,7 +721,7 @@ class BusinessRuleRepository(IBusinessRuleRepository):
             
             # Left Joins
             query = query.outerjoin(SourceTypeAlias, BusinessRule.sourceid == SourceTypeAlias.masterconfigurationtypeid)
-            query = query.outerjoin(DocumentTypeAlias, BusinessRule.documenttypeid == DocumentTypeAlias.masterconfigurationtypeid)
+            query = query.outerjoin(FileTypeAlias, BusinessRule.filetypeid == FileTypeAlias.masterconfigurationtypeid)
 
             # WHERE clauses
             filters = [BusinessRule.ruletype == rule_type]
@@ -744,13 +742,13 @@ class BusinessRuleRepository(IBusinessRuleRepository):
             filters.append(source_filter)
 
             # ContentType filtering logic from SQL:
-            # (@RuleType <> 'Classification' OR (Rules.DocumentTypeId = @ContentType))
+            # (@RuleType <> 'Classification' OR (Rules.FileTypeId = @ContentType))
             if rule_type == 'Classification':
                 # Convert content_type to int if possible, handling None/DBNull
                 try:
                     ct_id = int(content_type) if content_type and content_type.isdigit() else None
                     if ct_id is not None:
-                        filters.append(BusinessRule.documenttypeid == ct_id)
+                        filters.append(BusinessRule.filetypeid == ct_id)
                 except (ValueError, TypeError):
                      pass
 
@@ -807,7 +805,7 @@ class BusinessRuleRepository(IBusinessRuleRepository):
     def get_usage_log_by_rule_async(self, db: Session, input_model: Any) -> Any:
         try:
             # Join FileProcessLog and FileManager to get details
-            # C# returns UsageLogApiResult with fields: Count, Id, FileName, DocumentType, Expression, DocUID, UniqueRuleId
+            # C# returns UsageLogApiResult with fields: Count, Id, FileName, FileType, Expression, FileUID, UniqueRuleId
             
             query = db.query(
                 FileProcessLog, 
@@ -842,9 +840,9 @@ class BusinessRuleRepository(IBusinessRuleRepository):
                          "Count": total_records,
                          "Id": log.fileprocesslogid,
                          "FileName": fname,
-                         "DocumentType": ftype,
+                         "FileType": ftype,
                          "Expression": None, # Expression not easily available without joining rule or parsing log
-                         "DocUID": log.fileuid,
+                         "FileUID": log.fileuid,
                          "UniqueRuleId": log.ruleid
                      })
                      

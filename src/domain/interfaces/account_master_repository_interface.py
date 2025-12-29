@@ -11,6 +11,6 @@ class IAccountMasterRepository(ABC):
     def get_account_data_by_file_uid(self, db: Session, file_uid: UUID) -> List[AccountFileDataResponse]:
         """
         Get account data by file_uid.
-        Replicates GetAccountDataByDocUID stored procedure logic.
+        Replicates GetAccountDataByFileUID stored procedure logic.
         """
         pass

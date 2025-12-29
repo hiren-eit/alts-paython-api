@@ -6,14 +6,14 @@ from datetime import datetime
 from typing import List, Dict
 from sqlalchemy.orm import Session
 
-from src.domain.dtos.file_manager_dto import FileManagerFilter, DocumentManagerItem
+from src.domain.dtos.file_manager_dto import FileManagerFilter, FileManagerItem
 from src.domain.entities.file_manager import FileManager
 from src.domain.entities.file_configuration import FileConfiguration
 
 
-class DocumentManagerResultEnricher:
+class FileManagerResultEnricher:
     """
-    Enriches query results by mapping FileManager entity to DocumentManagerItem DTO.
+    Enriches query results by mapping FileManager entity to FileManagerItem DTO.
     """
     
     def __init__(self, db: Session, filters: FileManagerFilter):
@@ -32,94 +32,94 @@ class DocumentManagerResultEnricher:
 
         # Build enriched items
         items = []
-        for doc in results:
-            item = self._build_item(doc)
+        for file in results:
+            item = self._build_item(file)
             items.append(item)
         
         return items
     
-    def _build_item(self, doc: FileManager) -> Dict:
+    def _build_item(self, file: FileManager) -> Dict:
         """Build a single item mapping entity to DTO with SLA info."""
         # Get SLA info
         config_name = (
-            doc.filetypegenai 
-            if doc.status in ['Linked', 'Approved', 'Ingested', 'Completed', 'Ignored']
-            else doc.filetypeproceesrule
+            file.filetypegenai 
+            if file.status in ['Linked', 'Approved', 'Ingested', 'Completed', 'Ignored']
+            else file.filetypeproceesrule
         )
         sla_days = self._config_map.get(config_name, 0)
 
         # Calculate age
-        age = doc.age or 0
-        if doc.createdate:
-            age = (datetime.utcnow() - doc.createdate.replace(tzinfo=None)).days
+        age = file.age or 0
+        if file.createdate:
+            age = (datetime.utcnow() - file.createdate.replace(tzinfo=None)).days
         
         # Calculate SLA status
         age_sla_display, sla_status = self._calculate_sla_status(age, sla_days)
         tsla_status = self._calculate_tsla_status(age)
 
-        item = DocumentManagerItem(
-            fileid=doc.fileid,
-            fileuid=doc.fileuid,
-            type=doc.type,
-            filename=doc.filename,
-            firm=doc.firm,
-            entityuid=doc.entityuid,
-            accountsid=doc.accountsid,
-            accountuid=doc.accountuid,
-            filepath=doc.filepath,
-            createdate=doc.createdate,
-            createtime=doc.createtime,
-            comments=doc.comments,
-            createby=str(doc.createby) if doc.createby is not None else None,
-            filenameframe=doc.filenameframe,
-            batchid=doc.batchid,
-            metadata=doc.file_metadata,
-            checksum=doc.checksum,
-            status=doc.status,
-            statusdate=doc.statusdate,
-            method=doc.method,
-            reasonid=doc.reasonid,
-            reason=doc.reason,
-            harvestsystem=doc.harvestsystem,
-            harvestmethod=doc.harvestmethod,
-            harvestsource=doc.harvestsource,
-            indexsystem=doc.indexsystem,
-            indexmethod=doc.indexmethod,
-            extractsystem=doc.extractsystem,
-            extractmethod=doc.extractmethod,
+        item = FileManagerItem(
+            fileid=file.fileid,
+            fileuid=file.fileuid,
+            type=file.type,
+            filename=file.filename,
+            firm=file.firm,
+            entityuid=file.entityuid,
+            accountsid=file.accountsid,
+            accountuid=file.accountuid,
+            filepath=file.filepath,
+            createdate=file.createdate,
+            createtime=file.createtime,
+            comments=file.comments,
+            createby=str(file.createby) if file.createby is not None else None,
+            filenameframe=file.filenameframe,
+            batchid=file.batchid,
+            metadata=file.file_metadata,
+            checksum=file.checksum,
+            status=file.status,
+            statusdate=file.statusdate,
+            method=file.method,
+            reasonid=file.reasonid,
+            reason=file.reason,
+            harvestsystem=file.harvestsystem,
+            harvestmethod=file.harvestmethod,
+            harvestsource=file.harvestsource,
+            indexsystem=file.indexsystem,
+            indexmethod=file.indexmethod,
+            extractsystem=file.extractsystem,
+            extractmethod=file.extractmethod,
             age=age,
-            emailsender=doc.emailsender,
-            emailsubject=doc.emailsubject,
-            category=doc.category,
-            failurestage=doc.failurestage,
-            filetypeproceesrule=doc.filetypeproceesrule,
-            filetypegenai=doc.filetypegenai,
-            ignoredon=doc.ignoredon,
-            ignoredby=str(doc.ignoredby) if doc.ignoredby is not None else None,
-            rule=doc.rule,
-            businessdate=str(doc.businessdate.date()) if doc.businessdate else None,
-            firmname=doc.firmname,
-            entityname=doc.entityname,
-            capturemethod=doc.capturemethod,
-            linkingmethod=doc.linkingmethod,
-            stage=doc.stage,
-            isactive=doc.isactive,
-            updatefileid=doc.updatefileid,
-            statuscomment=doc.statuscomment,
-            duplicatefileid=doc.duplicatefileid,
-            fileprocessstage=doc.fileprocessstage,
-            businessruleapplieddate=doc.businessruleapplieddate,
-            fileextension=doc.fileextension,
-            password=doc.password,
-            groupcode=doc.groupcode,
-            replay=doc.replay,
-            lastattemptedtime=doc.lastattemptedtime,
-            retrycount=doc.retrycount,
-            ingestionfailedimageurl=doc.ingestionfailedimageurl,
-            created=doc.created,
-            createdby=str(doc.createdby) if doc.createdby is not None else None,
-            updated=doc.updated,
-            updatedby=str(doc.updatedby) if doc.updatedby is not None else None,
+            emailsender=file.emailsender,
+            emailsubject=file.emailsubject,
+            category=file.category,
+            failurestage=file.failurestage,
+            filetypeproceesrule=file.filetypeproceesrule,
+            filetypegenai=file.filetypegenai,
+            ignoredon=file.ignoredon,
+            ignoredby=str(file.ignoredby) if file.ignoredby is not None else None,
+            rule=file.rule,
+            businessdate=str(file.businessdate.date()) if file.businessdate else None,
+            firmname=file.firmname,
+            entityname=file.entityname,
+            capturemethod=file.capturemethod,
+            linkingmethod=file.linkingmethod,
+            stage=file.stage,
+            isactive=file.isactive,
+            updatefileid=file.updatefileid,
+            statuscomment=file.statuscomment,
+            duplicatefileid=file.duplicatefileid,
+            fileprocessstage=file.fileprocessstage,
+            businessruleapplieddate=file.businessruleapplieddate,
+            fileextension=file.fileextension,
+            password=file.password,
+            groupcode=file.groupcode,
+            replay=file.replay,
+            lastattemptedtime=file.lastattemptedtime,
+            retrycount=file.retrycount,
+            ingestionfailedimageurl=file.ingestionfailedimageurl,
+            created=file.created,
+            createdby=str(file.createdby) if file.createdby is not None else None,
+            updated=file.updated,
+            updatedby=str(file.updatedby) if file.updatedby is not None else None,
             age_sla_display=age_sla_display,
             sla_status=sla_status,
             tsla_status=tsla_status
@@ -170,7 +170,7 @@ class DocumentManagerResultEnricher:
     # ARCHIVED METHODS (Commented out for future use)
     # =========================================================================
     
-    # def _get_account_info(self, doc_uids: List[UUID]) -> Dict[str, Dict]:
+    # def _get_account_info(self, file_uids: List[UUID]) -> Dict[str, Dict]:
     #     """Get account information with aggregation."""
     #     query = self.db.query(
     #         ExtractFile.fileuid,
@@ -189,7 +189,7 @@ class DocumentManagerResultEnricher:
     #     ).outerjoin(
     #         FirmMaster, AccountMaster.firm_id == FirmMaster.firm_id
     #     ).filter(
-    #         ExtractFile.fileuid.in_(doc_uids),
+    #         ExtractFile.fileuid.in_(file_uids),
     #         ExtractFile.isactive == True,
     #         ExtractFile.islinked == True,
     #         AccountMaster.isactive == True
@@ -197,18 +197,18 @@ class DocumentManagerResultEnricher:
     #     return self._aggregate_account_info(query)
     
     # def _aggregate_account_info(self, query_results) -> Dict[str, Dict]:
-    #     """Aggregate account info by doc_uid."""
+    #     """Aggregate account info by file_uid."""
     #     result = {}
     #     visibility = self.filters.visibility
     #     for row in query_results:
-    #         doc_key = str(row.fileuid)
-    #         if doc_key not in result:
-    #             result[doc_key] = {
+    #         file_key = str(row.fileuid)
+    #         if file_key not in result:
+    #             result[file_key] = {
     #                 'firmname': [], 'firmid': [], 'entityname': [],
     #                 'accountname': [], 'accountsid': [], 'accountuid': [],
     #                 'investor': [], 'is_core_account': False
     #             }
-    #         r = result[doc_key]
+    #         r = result[file_key]
     #         if row.firm_name: r['firmname'].append(row.firm_name)
     #         if row.firm_id: r['firmid'].append(str(row.firm_id))
     #         if row.entity_name: r['entityname'].append(row.entity_name)
@@ -221,13 +221,13 @@ class DocumentManagerResultEnricher:
     #         if row.account_sid: r['accountsid'].append(row.account_sid)
     #         if row.account_uid: r['accountuid'].append(str(row.account_uid))
     #         if row.firm_system == 'Core': r['is_core_account'] = True
-    #     for doc_key in result:
+    #     for file_key in result:
     #         for field in ['firmname', 'firmid', 'entityname', 'accountname', 'accountsid', 'accountuid', 'investor']:
-    #             values = list(set(result[doc_key][field]))
-    #             result[doc_key][field] = ', '.join(values) if values else None
+    #             values = list(set(result[file_key][field]))
+    #             result[file_key][field] = ', '.join(values) if values else None
     #     return result
     
-    # def _get_business_dates(self, doc_uids: List[UUID]) -> Dict[str, str]:
+    # def _get_business_dates(self, file_uids: List[UUID]) -> Dict[str, str]:
     #     """Get aggregated business dates."""
     #     from sqlalchemy import literal
     #     query = self.db.query(
@@ -237,28 +237,28 @@ class DocumentManagerResultEnricher:
     #             literal(', ', type_=String(5))
     #         ).label('dates')
     #     ).filter(
-    #         ExtractFile.fileuid.in_(doc_uids),
+    #         ExtractFile.fileuid.in_(file_uids),
     #         ExtractFile.isactive == True
     #     ).group_by(ExtractFile.fileuid).all()
     #     return {str(row.fileuid): row.dates for row in query}
     
-    # def _get_ingestion_counts(self, doc_uids: List[UUID]) -> Dict[str, Dict]:
+    # def _get_ingestion_counts(self, file_uids: List[UUID]) -> Dict[str, Dict]:
     #     """Get ingestion status counts."""
     #     query = self.db.query(
     #         ExtractFile.fileuid, ExtractFile.ingestionstatus,
     #         ExtractFile.ismanualingested, func.count().label('cnt')
     #     ).filter(
-    #         ExtractFile.fileuid.in_(doc_uids), ExtractFile.isactive == True
+    #         ExtractFile.fileuid.in_(file_uids), ExtractFile.isactive == True
     #     ).group_by(
     #         ExtractFile.fileuid, ExtractFile.ingestionstatus, ExtractFile.ismanualingested
     #     ).all()
     #     result = {}
     #     for row in query:
-    #         doc_key = str(row.fileuid)
-    #         if doc_key not in result:
-    #             result[doc_key] = {'in_progress': 0, 'failed': 0, 'manual': 0, 'done': 0, 'total': 0}
+    #         file_key = str(row.fileuid)
+    #         if file_key not in result:
+    #             result[file_key] = {'in_progress': 0, 'failed': 0, 'manual': 0, 'done': 0, 'total': 0}
     #         status = (row.ingestionstatus or '').lower().strip()
-    #         r = result[doc_key]
+    #         r = result[file_key]
     #         if status in ['in progress', 'inprogress', '']: r['in_progress'] += row.cnt
     #         elif status == 'failed': r['failed'] += row.cnt
     #         elif status == 'success':

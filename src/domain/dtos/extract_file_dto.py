@@ -60,7 +60,7 @@ class FileSecurityMappingDTO(BaseModel):
     comment: Optional[str] = None
     ismissingsecurity: Optional[bool] = None
     securitystage: Optional[str] = None
-    documentname: Optional[str] = None
+    filename: Optional[str] = None
     isactive: Optional[bool] = None
     created: Optional[Any] = None
     createdby: Optional[str] = None
@@ -98,12 +98,12 @@ class ExtractionFileDetailDTO(BaseModel):
     class Config:
         from_attributes = True
 
-class ExtractionDocumentField(BaseModel):
+class ExtractionFileField(BaseModel):
     """
-    Main DTO for extraction document field response.
-    Equivalent to ExtractionDocumentField in .NET
+    Main DTO for extraction file field response.
+    Equivalent to ExtractionFileField in .NET
     """
-    extraction_document_detail: Optional[ExtractionFileDetailDTO] = None
+    extraction_file_detail: Optional[ExtractionFileDetailDTO] = None
     configuration: Optional[str] = None
     file_security_mappings: Optional[List[FileSecurityMappingDTO]] = None
     file_configuration_fields: Optional[List[FileConfigurationFieldDTO]] = None

@@ -13,7 +13,7 @@ class ExtractionFileDetailModel(BaseModel):
     classification: Optional[str] = None
 
 class UpdateExtractFileRequest(BaseModel):
-    extraction_document_detail: ExtractionFileDetailModel
+    extraction_file_detail: ExtractionFileDetailModel
     updatedby: Optional[str] = "SYSTEM"
     old_audit_json: Optional[str] = None
     audit_updated_json: Optional[str] = None
