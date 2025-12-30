@@ -5,7 +5,7 @@ from sqlalchemy import (
 from src.domain.entities.base_entity import BaseEntity
 
 class AccountMaster(BaseEntity):
-    __tablename__ = "account_master"
+    __tablename__ = "tbl_account_master"
     __table_args__ = {'schema': 'frame'}
 
     accountmasterid = Column(BigInteger, primary_key=True, autoincrement=True)
