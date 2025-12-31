@@ -10,7 +10,7 @@ class BaseEntity(Base):
     __abstract__ = True
 
     created = Column(TIMESTAMP(7), nullable=False)
-    createdby = Column(String(255))
+    createdby = Column(String(255), nullable=True)
     updated = Column(TIMESTAMP(7))
-    updatedby = Column(String(255))
+    updatedby = Column(String(255), nullable=True)
     isactive = Column(Boolean, nullable=False)
