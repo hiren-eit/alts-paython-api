@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from src.core.lifespan import lifespan
 from src.core.settings import settings
 from src.infrastructure.logging.logger_manager import setup_logging
-from src.api.routes import file_manager_routes, file_activity_routes, account_master_routes, auth_routes, file_configuration_routes
+from src.api.routes import file_manager_routes, file_activity_routes, account_master_routes, auth_routes, file_configuration_routes, account_details_routes
 from src.api.controllers import business_rule_controller, file_router_controller
 from src.core.security import get_current_user
 
@@ -212,6 +212,7 @@ app.include_router(file_activity_routes.router, dependencies=[Depends(get_curren
 app.include_router(account_master_routes.router, dependencies=[Depends(get_current_user)])
 app.include_router(file_router_controller.router, dependencies=[Depends(get_current_user)])
 app.include_router(file_configuration_routes.router, dependencies=[Depends(get_current_user)])
+app.include_router(account_details_routes.router, dependencies=[Depends(get_current_user)])
 
 @app.get("/", response_model=Dict[str, str])
 async def root() -> Dict[str, str]:
