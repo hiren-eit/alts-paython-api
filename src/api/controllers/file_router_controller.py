@@ -7,9 +7,11 @@ from sqlalchemy.orm import Session
 from src.core.settings import get_connection_config
 from src.domain.services.file_router_service import FileRouterService
 from src.domain.dtos.extract_file_dto import ExtractFile
+from src.domain.dtos.resolve_file_update_dto import ResolveFileUpdate
 from src.infrastructure.database.connection_manager import get_db
 from src.infrastructure.logging.logger_manager import get_logger
 from src.api.controllers.base_controller import BaseController
+from src.domain.dtos.resolve_file_update_dto import ResolveFileUpdateResponseDTO
 
 # Initialize Logger
 logger = get_logger(__name__)
@@ -59,3 +61,20 @@ class FileRouterController(BaseController):
             logger.error(f"Error in get_extraction_data for FileUID {file_uid}: {ex}", exc_info=True)
             # Preserving original behavior: return empty list on error
             return []
+        
+    @router.post("/resolve-file-update", response_model=ResolveFileUpdateResponseDTO, summary="Resolve File Update")
+    def resolve_file_update(
+        resolveUpdate: ResolveFileUpdate,
+        service: FileRouterService = Depends(get_file_router_service),
+        db: Session = Depends(get_db)
+    ):
+        """
+        Resolves file updates
+        """
+        try:
+            logger.info(f"Request received to resolve file update FileUID: {resolveUpdate.selected_file_uid}")
+            return service.resolve_file_update(db, resolveUpdate)
+        except Exception as ex:
+            logger.error(f"Error in resolving file update for FileUID {resolveUpdate.selected_file_uid}: {ex}", exc_info=True)
+            # Preserving original behavior: return empty list on error
+            return {}

@@ -1,6 +1,7 @@
 from typing import List, Any, Dict
 from sqlalchemy.orm import Session
 from uuid import UUID
+from src.domain.dtos.resolve_file_update_dto import ResolveFileUpdate
 
 
 class IFileRouterRepository:
@@ -14,5 +15,15 @@ class IFileRouterRepository:
         """
         Returns list of extract files by file_uid.
         Replicates GetMultipleEntitiesORInvestor logic.
+        """
+        raise NotImplementedError
+    
+    def resolve_file_update(
+        self,
+        db: Session,
+        resolveUpdate: ResolveFileUpdate,
+    ) -> Dict:
+        """
+        Resolves file updates
         """
         raise NotImplementedError
