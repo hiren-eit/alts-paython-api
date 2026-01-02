@@ -27,20 +27,20 @@ class DatabaseHandler(logging.Handler):
             properties = getattr(record, "properties", None)
 
             session.execute(
-                text("""
-                    INSERT INTO logs (id, message, message_template, level, timestamp, exception, log_event, created, is_active)
-                    VALUES (:id, :message, :template, :level, NOW(), :exception, :props, :created, :is_active)
-                """),
+                text(
+                    """
+                    INSERT INTO frame.tbl_logs (id, message, message_template, level, timestamp, exception, log_event, created, is_active)
+                    VALUES (:id, :message, :template, :level, NOW(), :exception, :props, :created, :is_active)"""
+                ),
                 {
-                    "id": str(uuid.uuid4()),
                     "message": message,
                     "template": template,
                     "level": level,
                     "exception": exception_text,
                     "props": properties,
                     "created": datetime.now(timezone.utc),
-                    "is_active": True
-                }
+                    "is_active": True,
+                },
             )
             session.commit()
         except Exception as e:
