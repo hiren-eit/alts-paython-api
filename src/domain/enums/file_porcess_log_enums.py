@@ -1,0 +1,57 @@
+from enum import Enum
+
+
+class FileProcessStatus(str, Enum):
+    NewFile = "NewFile"
+    Classified = "Classified"
+    Ignored = "Ignored"
+    InProgress = "InProgress"
+    Failed = "Failed"
+    Successful = "Successful"
+    Captured = "Captured"
+    Extract = "Extract"
+    Duplicate = "Duplicate"
+    Update = "Update"
+    Indexed = "Indexed"
+    Linked = "Linked"
+    Ingested = "Ingested"
+    Approved = "Approved"
+    Completed = "Completed"
+    Pending = "Pending"
+
+
+class FileProcessStage(str, Enum):
+    New = "New"
+    DocReady = "DocReady"
+    Classified = "Classified"
+    Ignored = "Ignored"
+    NotMacthRule = "NotMacthRule"
+    InProgress = "InProgress"
+    Failed = "Failed"
+    Successful = "Successful"
+    ExtractReady = "ExtractReady"
+    ExtractSendToGenAPI = "ExtractSendToGenAPI"
+    ExtractSend = "ExtractSend"
+    ExtractFailed = "ExtractFailed"
+    ExtractReceived = "ExtractReceived"
+    AccountLinkage = "AccountLinkage"
+    AccountLinkageFailed = "AccountLinkageFailed"
+    FileLinked = "FileLinked"
+    Manual = "Manual"
+    Approved = "Approved"
+    Completed = "Completed"
+    AccountIdentification = "AccountIdentification"
+    IngestionFailed = "IngestionFailed"
+    SendFilesToETL = "SendFilesToETL"
+    ExtractReadyToETL = "ExtractReadyToETL"
+    ETLExtractFailed = "ETLExtractFailed"
+    Ingested = "Ingested"
+    PrepareIngestion = "PrepareIngestion"
+    ManualIngested = "ManualIngested"
+
+
+class FileFailureStage(str, Enum):
+    FailedCapture = "Failed Capture"
+    FailedExtraction = "Failed Extraction"
+    FailedIngestion = "Failed Ingestion"
+    FailedLinking = "Failed Linking"

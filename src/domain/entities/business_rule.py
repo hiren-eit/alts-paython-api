@@ -19,3 +19,4 @@ class BusinessRule(BaseEntity):
     usage = Column(Integer, default=0) # Added based on C# GetBusinessDataResponse
     
     # isactive, created, createdby, updated, updatedby are inherited from BaseEntity
+    # ... any other fields? Step 148 shows this.

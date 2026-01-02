@@ -1,13 +1,15 @@
 from sqlalchemy import Column, String, BigInteger, ForeignKey, Boolean
 from src.domain.entities.base_entity import BaseEntity
 
+
 class FileConfigurationField(BaseEntity):
     """
     Entity representing a field configuration for a file type.
     Maps to tbl_file_configuration_field in the frame schema.
     """
+
     __tablename__ = "tbl_file_configuration_field"
-    __table_args__ = {'schema': 'frame'}
+    __table_args__ = {"schema": "frame"}
 
     fileconfigurationfieldid = Column(BigInteger, primary_key=True, autoincrement=True, name="fileid")
     # fileconfigurationid = Column(BigInteger, ForeignKey("frame.tbl_file_configuration.fileconfigurationid"))

@@ -4,7 +4,7 @@ from sqlalchemy import (
 from src.domain.entities.base_entity import BaseEntity
 
 class FirmMaster(BaseEntity):
-    __tablename__ = "firm_master"
+    __tablename__ = "tbl_firm_master"
     __table_args__ = {'schema': 'frame'}
 
     firm_id = Column(BigInteger, primary_key=True, autoincrement=True)

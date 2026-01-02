@@ -130,14 +130,18 @@ const createSearchBar = () => {
  * Since we're not in control of the actual index.html, we
  * need to dynamically replace the logo with the Arch logo
  */
-const changeToArchLogo = (parent) => {
-  const logo = parent.querySelector("img");
-  if (logo) {
-    logo.src = "/static/images/arch-logo.svg";
-    logo.height = "20";
-    logo.style.display = "block";
-  }
+const changeToFrameLogo = (parent) => {
+  const svg = parent.querySelector("svg");
+  if (!svg) return;
+  const img = document.createElement("img");
+  img.src = "/static/images/logo.png";
+  img.height = 40;
+  img.style.display = "block";
+  img.alt = "Logo";
+
+  svg.replaceWith(img);
 };
+
 
 const copyToClipboard = (text) => {
   navigator.clipboard.writeText(text).then(() => {
@@ -199,7 +203,7 @@ const initializationPolling = setInterval(function () {
     console.log("Custom UI: Topbar found!");
     try {
       clearInterval(initializationPolling);
-      changeToArchLogo(topbar);
+      changeToFrameLogo(topbar);
       console.log("Custom UI: Logo changed (or checked)");
       const searchBar = createSearchBar();
       searchBar.id = "custom-search-bar";
@@ -258,15 +262,18 @@ const initializationPolling = setInterval(function () {
       // Observer for response blocks to add Copy/Download buttons
       const responseObserver = new MutationObserver(() => {
         const responseBlocks = document.querySelectorAll(".response-col_description");
-        for (const block of responseBlocks) {
-          addResponseActionButtons(block);
-        }
+        // for (const block of responseBlocks) {
+        //   addResponseActionButtons(block);
+        // }
       });
       responseObserver.observe(document.body, {
         childList: true,
         subtree: true,
       });
-
+      const openjslink = document.querySelector(".info > .main > .link");
+      if (openjslink) {
+        openjslink.remove();
+      }
       // We listen for any changes to any of the route blocks, and clone the code
       // block so it can be side by side with the schema
       const codeAndSchemaSideBySideObserver = new MutationObserver((e) => {
@@ -294,7 +301,7 @@ const initializationPolling = setInterval(function () {
               
               code.style.width = "35%";
               schemaButton.click();
-              
+            
               const modelBox = newOptBlock.querySelector(".model-box");
               if (modelBox) {
                 modelBox.style.width = "60%";
@@ -318,7 +325,6 @@ const initializationPolling = setInterval(function () {
                 if (tabList) {
                   tabList.style.display = "none";
                 }
-
                 newOptBlock.classList.add("side-by-side-applied");
               }
             }

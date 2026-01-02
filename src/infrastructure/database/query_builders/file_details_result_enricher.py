@@ -19,7 +19,7 @@ class FileDetailsResultEnricher:
     def enrich(self, file: FileManager) -> Optional[Dict]:
         """
         Transform a FileManager entity into a dictionary representation of FileDetailsItem.
-        
+
         Args:
             file (FileManager): The file entity to enrich.
 
@@ -72,7 +72,7 @@ class FileDetailsResultEnricher:
             emailsubject=file.emailsubject,
             category=file.category,
             failurestage=file.failurestage,
-            filetypeproceesrule=file.filetypeproceesrule,
+            filetypeprocessrule=file.filetypeprocessrule,
             filetypegenai=file.filetypegenai,
             ignoredon=file.ignoredon,
             ignoredby=str(file.ignoredby) if file.ignoredby is not None else None,
@@ -101,7 +101,7 @@ class FileDetailsResultEnricher:
             updated=file.updated,
             updatedby=str(file.updatedby) if file.updatedby is not None else None,
             age_sla_display=age_sla_display,
-            sla_status=sla_status
+            sla_status=sla_status,
         )
 
         return details_item.model_dump()
@@ -122,27 +122,33 @@ class FileDetailsResultEnricher:
         Determine the SLA day threshold based on file status and type.
         """
         # Select configuration name based on status
-        completed_statuses = {'Linked', 'Approved', 'Ingested', 'Completed', 'Ignored'}
+        completed_statuses = {"Linked", "Approved", "Ingested", "Completed", "Ignored"}
         config_name = (
-            file.filetypegenai 
+            file.filetypegenai
             if file.status in completed_statuses
             else file.filetypeproceesrule
         )
 
         if not config_name:
             return 0
-            
-        config = self.db.query(FileConfiguration.sla_days).filter(
-            FileConfiguration.configuration_name == config_name,
-            FileConfiguration.isactive == True
-        ).first()
+
+        config = (
+            self.db.query(FileConfiguration.sla_days)
+            .filter(
+                FileConfiguration.configurationname == config_name,
+                FileConfiguration.isactive == True,
+            )
+            .first()
+        )
 
         return config.sla_days if config else 0
 
-    def _determine_sla_status(self, age: int, sla_days: Optional[int]) -> Tuple[str, Optional[str]]:
+    def _determine_sla_status(
+        self, age: int, sla_days: Optional[int]
+    ) -> Tuple[str, Optional[str]]:
         """
         Calculate the SLA status string and display format.
-        
+
         Returns:
             Tuple[str, Optional[str]]: (age_sla_display, sla_status)
         """
@@ -153,10 +159,10 @@ class FileDetailsResultEnricher:
                 sla_status = "On SLA"
             else:
                 sla_status = "SLA Breached"
-            
+
             age_sla_display = f"{age}/{sla_days}"
         else:
             sla_status = None
             age_sla_display = str(age)
-            
+
         return age_sla_display, sla_status

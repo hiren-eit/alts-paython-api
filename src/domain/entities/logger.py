@@ -4,7 +4,8 @@ from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 from .base_entity import BaseEntity
 
 class Logs(BaseEntity):
-    __tablename__ = "logs"
+    __tablename__ = "tbl_logs"
+    __table_args__ = {'schema': 'frame'}
 
     logid = Column(BigInteger, primary_key=True, autoincrement=True)
     message = Column(Text, nullable=True)

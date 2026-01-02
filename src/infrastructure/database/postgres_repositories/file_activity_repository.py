@@ -196,7 +196,7 @@ class FileActivityRepository(IFileActivityRepository):
     #             D.harvestsource,
     #             D.method,
     #             batch_sq.label("batch"),
-    #             D.filetypeproceesrule,
+    #             D.filetypeprocessrule,
     #             # firm_sq.label("firm_id"),
     #             # D.capturemethod,
     #             # D.linkingmethod,
@@ -212,7 +212,7 @@ class FileActivityRepository(IFileActivityRepository):
     #                 or_(
     #                     and_(
     #                         D.status.in_(["Captured", "Extract", "Update", "Failed"]),
-    #                         DC.configuration_name == D.filetypeproceesrule
+    #                         DC.configuration_name == D.filetypeprocessrule
     #                     ),
     #                     and_(
     #                         or_(

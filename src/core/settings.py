@@ -21,14 +21,14 @@ class Settings(BaseSettings):
     # ======================================================
     # Application Settings
     # ======================================================
-    app_name: str = Field(default=config.get("app", "name", fallback="FastAPIApp"))
+    app_name: str = Field(default=config.get("app", "name", fallback="FrameAPI"))
     app_version: str = Field(default="1.0.0")
     debug: bool = Field(default=True)
     log_level: str = Field(default="INFO")
     path_base: str = Field(default="/")
     secret_key: str = Field(default="xWUHZrhPACh6pk0cRFPPCC8z7UNIfu3h")
     algorithm: str = Field(default="HS256")
-    access_token_expire_minutes: int = Field(default=1380) # 23 hours
+    access_token_expire_minutes: int = Field(default=1380)  # 23 hours
 
     # ======================================================
     # CORS / Hosts
@@ -39,7 +39,9 @@ class Settings(BaseSettings):
     # ======================================================
     # Database Switching (from config.ini)
     # ======================================================
-    active_db: str = Field(default=config.get("database", "active_db", fallback="postgres"))
+    active_db: str = Field(
+        default=config.get("database", "active_db", fallback="postgres")
+    )
 
     # Env-driven actual connection strings
     postgres_url: str = Field(default=os.getenv("POSTGRES_URL", ""))
@@ -48,9 +50,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        model_config = {
-            "extra": "allow"
-        }
+        model_config = {"extra": "allow"}
 
     # ======================================================
     # Client Details
@@ -75,13 +75,17 @@ def get_connection_config():
 
     if db in ("postgres", "postgresql"):
         if not settings.postgres_url:
-            raise ValueError("PostgreSQL connection string not set in .env (DATABASE_URL)")
+            raise ValueError(
+                "PostgreSQL connection string not set in .env (DATABASE_URL)"
+            )
         connection_string = settings.postgres_url
         repo_path = "src.infrastructure.database.postgres_repositories"
 
     elif db in ("sql", "sqlserver", "mssql"):
         if not settings.sql_url:
-            raise ValueError("SQL Server connection string not set in .env (SQL_DATABASE_URL)")
+            raise ValueError(
+                "SQL Server connection string not set in .env (SQL_DATABASE_URL)"
+            )
         connection_string = settings.sql_url
         repo_path = "src.infrastructure.database.sqlserver_repositories"
 
@@ -89,4 +93,3 @@ def get_connection_config():
         raise ValueError(f"Unsupported database type: {settings.active_db}")
 
     return connection_string, repo_path
-
