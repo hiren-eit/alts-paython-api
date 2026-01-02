@@ -12,9 +12,9 @@ class FileActivity(BaseEntity):
     fileuid = Column(UUID(as_uuid=True))
     status = Column(Text)
     stage = Column(Text)
-    fileprocessingstage = Column(Text)
-    failurestage = Column(Text)
-    statuscomment = Column(Text)
+    fileprocessingstage = Column(Text, key="file_processing_stage")
+    failurestage = Column(Text, key="failure_stage")
+    statuscomment = Column(Text, key="status_comment")
     # isactive, created, createdby, updated, updatedby are inherited from BaseEntity
-    iscommented = Column(Boolean, default=False)
+    iscommented = Column(Boolean, default=False, key="is_commented")
     comment = Column(Text)

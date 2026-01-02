@@ -6,7 +6,7 @@ from uuid import UUID
 
 from src.core.settings import get_connection_config
 from src.domain.services.file_activity_service import FileActivityService
-from src.domain.dtos.file_activity_dto import FileActivity
+from src.domain.dtos.file_activity_dto import FileActivityResponse
 from src.infrastructure.logging.logger_manager import get_logger
 from src.infrastructure.database.connection_manager import get_db
 
@@ -22,7 +22,7 @@ def get_service(db: Session = Depends(get_db)) -> FileActivityService:
     repository = FileActivityRepository()
     return FileActivityService(repository)
 
-@router.get("/get-file-activity-log-api", response_model=List[FileActivity])
+@router.get("/get-file-activity-log", response_model=List[FileActivityResponse])
 def get_file_activity_logs(
     fileuid: UUID = Query(..., description="File UID"),
     service: FileActivityService = Depends(get_service),

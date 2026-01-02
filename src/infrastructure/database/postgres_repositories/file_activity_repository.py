@@ -20,7 +20,10 @@ from src.infrastructure.database.query_builders import (
     FileManagerQueryBuilder,
     FileManagerResultEnricher,
 )
-from src.domain.dtos.file_activity_dto import FileActivity
+from src.infrastructure.database.query_builders.file_activity_log_query_builder import (
+    FileActivityLogQueryBuilder
+)
+from src.domain.dtos.file_activity_dto import FileActivityResponse
 from src.infrastructure.database.query_builders.file_details_query_builder import FileDetailsQueryBuilder
 from src.infrastructure.database.query_builders.file_details_result_enricher import FileDetailsResultEnricher
 from src.infrastructure.logging.logger_manager import get_logger
@@ -272,11 +275,13 @@ class FileActivityRepository(IFileActivityRepository):
 
     
     
-    def get_file_activity(self, db: Session, fileuid: UUID) -> List[FileActivity]:
+    def get_file_activity(self, db: Session, fileuid: UUID) -> List[FileActivityResponse]:
         """Retrieve file activity logs for a given file UID."""
         logger.info(f"GetFileActivity: fileuid={fileuid}")
         # TODO: Implement actual query logic. Returning empty list as placeholder.
-        return []
+        query_builder = FileActivityLogQueryBuilder(db, fileuid)
+        query_builder.build_query()
+        return query_builder.get_results()
 
     def approve_file(
         self,
