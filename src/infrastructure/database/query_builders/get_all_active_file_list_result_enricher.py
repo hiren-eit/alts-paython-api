@@ -40,7 +40,7 @@ class GetAllActiveFileListResultEnricher:
 
         for config_type in results:
             enriched_config_type = {
-                'id': config_type.id,
+                'id': config_type.masterconfigurationtypeid,
                 'displayname': config_type.displayname,
                 'type': config_type.type
             }

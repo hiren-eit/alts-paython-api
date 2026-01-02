@@ -44,12 +44,12 @@ class UpdateFileConfiguration:
             # ingestioncode=configuration.ingestioncode,
             # isactive=configuration.isactive,
             updated=datetime.utcnow(),
-            updatedby=len(updated_by),
+            updatedby=updated_by,
         )
         self.db.execute(stmt)
         self.db.commit()
 
-    def save_log(self, configuration_id: int, changes: str, created_by: int) -> None:
+    def save_log(self, configuration_id: int, changes: str, created_by) -> None:
         """
         Save the configuration change log.
         """

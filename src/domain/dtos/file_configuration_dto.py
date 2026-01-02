@@ -30,7 +30,7 @@ class FileConfigurationField(BaseModel):
     mandatory: Optional[bool]
     parent_field_id: Optional[UUID]
     sub_rows: List[str]
-    file_configuration_id: UUID
+    file_configuration_id: Optional[UUID] = None
 
 class FileConfiguration(BaseModel):
     fileid: Optional[int] = None

@@ -11,7 +11,7 @@ class FileProcessLog(BaseEntity):
     fileuid = Column(UUID(as_uuid=True))  # Maps to FileUID
     stage = Column(String(100))
     status = Column(String(100))
-    ruleid = Column(String(255))
+    ruleid = Column(String(255), nullable=True)
     statuscomment = Column(Text)
     fileprocessstage = Column(String(100)) # Maps to fileProcessStage log
 

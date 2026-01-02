@@ -5,6 +5,8 @@ from src.infrastructure.database.query_builders.get_all_active_file_list_query_b
 from src.domain.entities.file_configuration_log import FileConfigurationLog
 from src.infrastructure.database.query_builders.update_file_configuration_action_query_builder import UpdateFileConfigurationActionQueryBuilder
 from src.core.settings import settings
+from src.domain.dtos.resolve_file_update_dto import ResolveFileUpdate
+from src.domain.entities.file_manager import FileManager
 
 from sqlalchemy import true
 from sqlalchemy.orm import Session
@@ -15,7 +17,7 @@ from typing import List
 from uuid import uuid4
 
 from sqlalchemy.orm import Session
-import httpx
+# import httpx
 import json
 from datetime import datetime
 
@@ -23,7 +25,7 @@ from src.domain.entities.file_configuration import FileConfiguration
 from src.infrastructure.database.query_builders import save_file_configuration_query_builder
 from src.infrastructure.database.query_builders.update_file_configuration_query_builder import UpdateFileConfiguration
 from src.domain.interfaces.file_configure_repository_interface import IFileConfigurationRepository
-from src.domain.dtos.file_configuration_dto import FileConfiguration, FileConfigurationField
+from src.domain.dtos.file_configuration_dto import FileConfiguration as FileConfigurationDTO, FileConfigurationField
 from src.infrastructure.database.query_builders.save_file_configuration_query_builder import SaveFileConfigurationQueryBuilder
 from src.infrastructure.logging.logger_manager import get_logger
 from uuid import UUID
@@ -74,7 +76,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             raise
 
     
-    async def save_file_configuration(self, db: Session, fileConfiguration: FileConfiguration) -> bool:
+    async def save_file_configuration(self, db: Session, fileConfiguration: FileConfigurationDTO) -> bool:
         """
         Add file configuration.
         Replicates the AddFileConfiguration stored procedure logic.
@@ -92,7 +94,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             query_builder.save_log(
                 configuration.fileid,
                 fields_count,
-                len(fileConfiguration.created_by),
+                fileConfiguration.created_by,
             )
 
             query_builder.commit()
@@ -109,7 +111,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             raise
 
 
-    async def update_file_configuration(self, db: Session, fileConfiguration: FileConfiguration) -> bool:
+    async def update_file_configuration(self, db: Session, fileConfiguration: FileConfigurationDTO) -> bool:
         """
             Update file configuration.
             Replicates the UpdateFileConfiguration stored procedure logic.
@@ -174,12 +176,12 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                 existing_config.fieldtype = fileConfiguration.field_type
 
             # 3. Update the configuration in DB
-            query_builder.update_configuration(existing_config, updated_by=fileConfiguration.updated_by)
+            query_builder.update_configuration(existing_config, updated_by=fileConfiguration.updated_by or "SYSTEM")
 
             # 4. Create change log
             if changes:
                 log_payload = json.dumps([{"description": change, "changeType": "Updated"} for change in changes])
-                query_builder.save_log(existing_config.fileid, log_payload, len(fileConfiguration.created_by))
+                query_builder.save_log(existing_config.fileid, log_payload, fileConfiguration.created_by)
 
             # 5. Commit transaction
             query_builder.commit()
@@ -194,7 +196,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
             raise
 
     
-    async def update_file_action_configuration(self, db: Session, fileConfiguration: FileConfiguration) -> bool:
+    async def update_file_action_configuration(self, db: Session, fileConfiguration: FileConfigurationDTO) -> bool:
         """
             Update file configuration action.
             Replicates the UpdateFileConfigurationAction stored procedure logic.
@@ -219,7 +221,7 @@ class FileConfigurationRepository(IFileConfigurationRepository):
 
             file_config_result.reason = fileConfiguration.reason
             file_config_result.updated = datetime.utcnow()
-            file_config_result.updatedby = len(fileConfiguration.updated_by or "SYSTEM")
+            file_config_result.updatedby = fileConfiguration.updated_by
 
             query_builder.update_file_configuration_in_db()
 
@@ -231,9 +233,9 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                     title="Configuration Activated" if fileConfiguration.is_active else "Configuration Deactivated",
                     description=json_description,
                     updated=datetime.utcnow(),
-                    updatedby=len(fileConfiguration.updated_by or "SYSTEM"),
+                    updatedby=fileConfiguration.updated_by or "SYSTEM",
                     created=datetime.utcnow(),
-                    createdby=len(fileConfiguration.created_by or "SYSTEM"),
+                    createdby=fileConfiguration.created_by or "SYSTEM",
                     isactive=True if fileConfiguration.is_active else False,
                 )
                 query_builder.save_log(log_entry)
@@ -419,13 +421,76 @@ class FileConfigurationRepository(IFileConfigurationRepository):
                     child_field,
                     accumulator,
                 )
+
+    # def resolve_file_update(
+    #     self,
+    #     db: Session,
+    #     resolveUpdate: ResolveFileUpdate,
+    # ) -> Dict:
+    #     """
+    #         Resolves file update..
+            
+    #         Returns:
+    #             dict: {
+    #                 "result_code": "SUCCESS",
+    #                 "total": int,
+    #                 "data": List[FileConfiguration]
+    #             }
+    #     """
+    #     try:
+    #         logger.info("ResolveFileUpdate")
+
+    #         selected_file = (
+    #             db.query(FileManager)
+    #             .filter(
+    #                 FileManager.fileuid == resolveUpdate.selected_file_uid,
+    #                 FileManager.isactive.is_(True)
+    #             )
+    #             .first()
+    #         )
+
+    #         ignored_file = (
+    #             db.query(FileManager)
+    #             .filter(
+    #                 FileManager.fileuid == resolveUpdate.ignored_file_uid,
+    #                 FileManager.isactive.is_(True)
+    #             )
+    #             .first()
+    #         )
+
+    #         if selected_file is None or ignored_file is None:
+    #             result_code = "Error"
+    #             result_message = "One or both files are not found."
+            
+    #         with db.begin():
+    #             if selected_file.status == "Update":
+    #                 if ignored_file.status == "Ingested" or ignored_file.status == "Completed":
+    #                     return {
+    #                         "result_code": "Error",
+    #                         "result_message": (f"Earlier file {ignored_file.fileuid}, {ignored_file.filename} already ingested. "
+    #                                         "This action will not ingest the updated file. "
+    #                                         "You may make changes to the existing position/transaction directly.")
+    #                     }
+
+    #         return {
+    #             "result_code": result_code,
+    #             # "total": count,
+    #             # "in_review_count": 1,
+    #             # "data": enriched_result,
+    #             "result_message": result_message
+    #         }
+    #     except Exception as ex:
+    #         logger.error(f"ResolveFileUpdate error: {ex}", exc_info=True)
+    #         db.rollback()
+    #         raise
     
     async def _send_to_external_api(self, payload: dict):
-        headers = {
-            "Ocp-Apim-Subscription-Key": settings.subscription_key,
-            "Integrator-Key": settings.integrator_key,
-            "Content-Type": "application/json",
-        }
+        # headers = {
+        #     "Ocp-Apim-Subscription-Key": settings.subscription_key,
+        #     "Integrator-Key": settings.integrator_key,
+        #     "Content-Type": "application/json",
+        # }
+        headers = {}
 
         # async with httpx.AsyncClient(timeout=30) as client:
         #     response = await client.post(

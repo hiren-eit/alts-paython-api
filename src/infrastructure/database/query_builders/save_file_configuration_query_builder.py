@@ -45,8 +45,8 @@ class SaveFileConfigurationQueryBuilder:
             reason=file_configuration.reason,
             fieldtype=file_configuration.field_type,
             ingestioncode=file_configuration.ingestion_code,
-            created=file_configuration.created,
-            createdby=len(file_configuration.created_by),
+            created=datetime.now(timezone.utc),
+            createdby=file_configuration.created_by,
             isactive=file_configuration.is_active,
         )
 
@@ -61,7 +61,7 @@ class SaveFileConfigurationQueryBuilder:
                 mandatory=field.mandatory,
                 fileconfigurationid=configuration.fileid,
                 parentfieldid=None,
-                created=configuration.created,
+                created=datetime.now(timezone.utc),
                 createdby=configuration.createdby,
                 isactive=True,
             )
@@ -131,7 +131,8 @@ class SaveFileConfigurationQueryBuilder:
             mandatory=field_dto.mandatory,
             fileconfigurationid=file_configuration_id,
             parentfieldid=None,  # set after flush
-            createdby=len(field_dto.created_by),
+            createdby=field_dto.created_by,
+            created = datetime.now(timezone.utc),
             isactive=True,
         )
 

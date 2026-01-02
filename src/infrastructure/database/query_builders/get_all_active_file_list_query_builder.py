@@ -36,7 +36,7 @@ class GetAllActiveFileListQueryBuilder:
         self._query = self.db.query(MasterConfigurationType).filter(
             MasterConfigurationType.type == "ContentType",
             MasterConfigurationType.isactive == True
-        ).order_by(MasterConfigurationType.id) #Order by Id DESC
+        ).order_by(MasterConfigurationType.masterconfigurationtypeid) #Order by Id DESC
         return self
     
     def get_count(self) -> int:
